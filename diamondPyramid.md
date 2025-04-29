@@ -43,34 +43,71 @@ https://codepen.io/nomynoma/full/JoorQRd
 - `block.visible`：塗られたブロックに対して `opacity: 1` を設定
 - グラデーションとシャドウでダイヤ風の見た目
 
-### 📜 JavaScript（主要関数）
+---
 
-#### `createPyramidFrame()`
+## 📜 JavaScript（主要関数）
+
+### `createPyramidFrame()`
 - 100段のピラミッドをDOMに構築
 - 各段に段数ラベルを追加（10段ごと）
 
-#### `getPaintCostPerBlock(row)`
+### `getPaintCostPerBlock(row)`
 - 各段ごとの1マスあたりの塗装コストを返す
 - 下段ほどコストが大きくなるロジック
 
-#### `getTotalPaintNeeded()`
+### `getTotalPaintNeeded()`
 - 全100段を完全に塗るために必要なダイヤブロックの合計を算出（39601個）
 
-#### `animateBlocks(direction)`
-- ダイヤ数を元に塗れる範囲を決定し、順番にアニメーション表示
-- `direction = "top"` or `"bottom"` で描画順を切り替え
-- 各段ごとのコストに応じて減算処理
+### `animateBlocks(direction)`
+- ユーザーの入力に基づき、塗れるブロックを順に表示（方向選択可能）
+- 各段ごとのコストに応じて、消費できるだけのブロックを塗る
 
-#### `clearBlocks()`
+### `clearBlocks()`
 - 描画中のブロック表示とタイマーをリセット
 
 ---
 
 ## 📏 計算ロジック
 
-- ユーザーが入力した **ダイヤ数 ÷ 9 = ペンキ個数（＝ダイヤモンドブロック）**
-- 各段に必要な **ブロック数 × その段のペンキコスト** で、塗装可否を判断
-- 全段塗るためには最大 **39601個のダイヤモンドブロック（＝356409個のダイヤ）** が必要
+### 🔢 ダイヤ → ペンキ変換
+- ユーザーが所持している**ダイヤ数 ÷ 9** ＝ 使用可能なペンキ数（整数値）
+- `Math.floor(diaCount / 9)` で算出
+
+### 🧮 段ごとの塗装コスト
+- N段目（0-indexed）の横幅ブロック数：
+
+```
+blockCount = 2 * N + 1
+```
+
+- N段目の1ブロックあたりの塗装コスト：
+
+```
+costPerBlock = Math.ceil((N + 1) / 10)
+```
+
+例：
+- 0〜9段 → コスト1
+- 10〜19段 → コスト2
+- ...
+- 90〜99段 → コスト10
+
+### 🧮 N段目を塗るために必要なペンキ数
+- その段をすべて塗るのに必要なペンキ数：
+
+```
+totalPaintForRow = blockCount × costPerBlock
+```
+
+例（20段目 = N=19）：
+- blockCount = 2 × 19 + 1 = 39
+- costPerBlock = 2
+- totalPaintForRow = 39 × 2 = 78
+
+### ⬇️ 塗装アニメーションにおける処理概要
+1. ユーザーのペンキ数（= diamondBlocks）を元に、段ごとに必要な塗装量をチェック。
+2. ペンキが段の全ブロック数分あれば、すべて塗る。
+3. 足りなければ、ペンキ1個につき1ブロックしか塗れないので、`Math.floor(remainingPaint / costPerBlock)`の分だけ塗る。
 
 ---
 
@@ -91,4 +128,4 @@ https://codepen.io/nomynoma/full/JoorQRd
 - 段ごとの詳細な消費量表示
 - 目標設定機能（例：80段まで目指す）
 - 保存・共有機能（進捗の記録）
-
+- ってChatGPTが勝手に言ってる。
