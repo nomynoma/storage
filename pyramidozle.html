@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <style>
+body {
+  font-family: sans-serif;
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+  background-image: 
+      
+ linear-gradient(to top, #102842, rgba(255,255,255,0.25)),     url("https://nomynoma.github.io/storage/dia.png");
+  background-color: #102842;
+  background-blend-mode: lighten;
+  background-repeat: no-repeat;
+  background-position: top;
+  background-size: 100vw auto;
+  color: #ccc;
+
+}
+
+a {
+  padding-right: 2px;
+  color: #ddd;
+  &:visited,
+  &:hover,
+  &:active,
+  &:focus {
+    color: #ddd;
+    text-decoration: none;
+  }
+
+}
+
+.container {
+  max-width: 800px;
+  text-align: center;
+}
+
+.controls {
+  margin-bottom: 10px;
+}
+
+.controls input {
+  width: 60px;
+  padding: 5px;
+  margin: 0 10px;
+}
+
+.buttons button {
+  padding: 10px 15px;
+  margin: 5px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.pyramid {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.row {
+  display: flex;
+  justify-content: center;
+  height: 7px; /* ブロック高さと一致させる */
+  position: relative; /* 横線と数字を重ねるため */
+}
+
+.row:after {
+  content: "";
+  position: absolute;
+  width: 100%;
+  border-top: 1px solid #666; /* 横線 */
+  top: 50%; /* 横線の位置を中央に */
+}
+
+.row-number {
+  position: absolute;
+  right: -30px; /* 横線の右側に数字を表示 */
+  font-size: 12px;
+  color: #eee;
+  border-bottom: 1px solid #999;
+  width: 30px;
+  text-align: right;
+  top: -2px;
+  height: 5px;
+  
+  .number-text {
+    position: absolute;
+    top: -5px;
+    right: -20px;
+    opacity: 0.5;
+  }
+}
+
+.block {
+  width: 5px;
+  height: 5px;
+  margin: 0;
+  background: linear-gradient(135deg, #6ce0f1, #4fd2e2, #a0faff); /* グラデーション背景 */
+  border: 0.5px solid #9cf; /* 枠線保持 */
+  box-shadow: inset 0 0 1px #fff, 0 1px 2px rgba(0, 0, 0, 0.4); /* シャドウ効果 */
+  opacity: 0;
+  transition: opacity 0.3s ease, background 0.3s ease;
+  z-index: 1;
+}
+
+.block.visible {
+  opacity: 1;
+}
+
+input[readonly] {
+  background-color: transparent;
+  border: none;  /* 薄いグレーの枠 */
+  color: #fff;  /* テキストカラーを薄く */
+  pointer-events: none;
+}
+
+.texts {
+  font-size: 16px;
+  input {
+    font-size: 16px !important;
+    width: 6rem;
+  }
+}
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1><a href="https://x.com/hashtag/%E3%83%94%E3%83%A9%E3%83%9F%E3%83%83%E3%83%89%E3%82%BA%E3%83%AB" target="_blank">#ピラミッドズル</a>どこまで出来たかな？確認ツール</h1>
+    
+    <!-- 入力フォーム: 作成するブロック数 -->
+    <div class="texts">
+      <div class="controls">
+        <label for="blockCount">集めたダイヤ数: </label>
+        <input type="number" id="diaCount" min="1" max="356409" value="40136">/356409<br/><br/>
+    <label for="diamondBlocks">ダイヤモンドブロック数: </label>
+    <input type="text" id="diamondBlocks" readonly>/39601
+      </div>
+      <p id="progress">現在の進捗は　%です。</p>
+    </div>
+    
+    <div class="buttons">
+      <button id="topStart">一番上から作成！</button>
+      <button id="bottomStart">一番下から作成！</button>
+      <button id="reset">リセット</button>
+      <button id="cancel">キャンセル</button>
+    </div>
+
+    <div class="pyramid" id="pyramid"></div>
+  </div>
+
+<a href="https://nomynoma.github.io/storage/diamondPyramid.md" style="opacity: 0.2;font-size: 10px;text-decoration: none; position: absolute; right: 0px;" target="_blank">chatGPTに作らせた仕様書</a>
+
+  
+  <script>
+const MAX_ROWS = 100;
+const pyramid = document.getElementById("pyramid");
+const diaCountInput = document.getElementById("diaCount");
+const topStartBtn = document.getElementById("topStart");
+const bottomStartBtn = document.getElementById("bottomStart");
+const resetBtn = document.getElementById("reset");
+const cancelBtn = document.getElementById("cancel");
+
+let blockRefs = []; // 各段のブロック配列
+let animationTimeouts = []; // アニメーションタイマー格納
+
+function getPaintCostPerBlock(row) {
+  const level = row + 1;
+  return ((2 * level - 1 - 1) * 4) / (2 * level - 1);
+}
+
+function getTotalPaintNeeded() {
+  let total = 0;
+  for (let row = 0; row < MAX_ROWS; row++) {
+    const blockCount = row * 2 + 1;
+    const costPerBlock = getPaintCostPerBlock(row);
+    total += blockCount * costPerBlock;
+  }
+  return Math.round(total) + 1;
+}
+
+const totalNeededDia = getTotalPaintNeeded();
+
+function createPyramidFrame() {
+  pyramid.innerHTML = "";
+  blockRefs = [];
+
+  for (let i = 0; i < MAX_ROWS; i++) {
+    const row = document.createElement("div");
+    row.className = "row";
+    const blocks = [];
+
+    const blockCount = i * 2 + 1;
+    for (let j = 0; j < blockCount; j++) {
+      const block = document.createElement("div");
+      block.className = "block";
+      row.appendChild(block);
+      blocks.push(block);
+    }
+
+    if (i % 10 === 9) {
+      // const rowNumber = document.createElement("div");
+      // rowNumber.className = "row-number";
+      // rowNumber.textContent = i + 1;
+      // row.appendChild(rowNumber);
+      const rowNumber = document.createElement("div");
+      rowNumber.className = "row-number";
+
+      const numberText = document.createElement("span");
+      numberText.className = "number-text";
+      numberText.textContent = i + 1;
+
+      rowNumber.appendChild(numberText);
+      row.appendChild(rowNumber);
+
+    
+    }
+
+    pyramid.appendChild(row);
+    blockRefs.push(blocks);
+  }
+}
+
+function clearBlocks() {
+  animationTimeouts.forEach(timeout => clearTimeout(timeout));
+  animationTimeouts = [];
+  blockRefs.flat().forEach(block => block.classList.remove("visible"));
+}
+
+function animateBlocks(direction) {
+  clearBlocks();
+
+  let diamonds = parseInt(diaCountInput.value) || 0;
+  let totalDiamonds = Math.floor(diamonds / 9); // ダイヤモンドブロック数に変換
+  document.getElementById("diamondBlocks").value = totalDiamonds;
+  document.getElementById("progress").textContent =
+    `現在の進捗は${(Math.min(Math.floor(((diamonds / 356409) * 100) * 100) / 100, 100))}%です。`;
+
+  if (totalDiamonds <= 0) return;
+
+  const rows = direction === "top" ? [...blockRefs] : [...blockRefs].reverse();
+  let delay = 0;
+
+  for (let r = 0; r < rows.length; r++) {
+    const realRow = direction === "top" ? r : MAX_ROWS - 1 - r;
+    const blocks = rows[r];
+    const blockCount = blocks.length;
+    const costPerBlock = getPaintCostPerBlock(realRow);
+    const rowCost = blockCount * costPerBlock;
+
+    if (totalDiamonds >= rowCost) {
+      blocks.forEach((block, i) => {
+        const timeoutId = setTimeout(() => {
+          block.classList.add("visible");
+        }, delay);
+        animationTimeouts.push(timeoutId);
+        delay += 1;
+      });
+      totalDiamonds -= rowCost;
+    } else {
+      const fillable = Math.floor(totalDiamonds / costPerBlock);
+      for (let i = 0; i < fillable; i++) {
+        const timeoutId = setTimeout(() => {
+          blocks[i].classList.add("visible");
+        }, delay);
+        animationTimeouts.push(timeoutId);
+        delay += 1;
+      }
+      break;
+    }
+  }
+}
+
+// イベント設定
+topStartBtn.addEventListener("click", () => animateBlocks("top"));
+bottomStartBtn.addEventListener("click", () => animateBlocks("bottom"));
+cancelBtn.addEventListener("click", () => clearBlocks());
+resetBtn.addEventListener("click", () => {
+  clearBlocks();
+  createPyramidFrame();
+  document.getElementById("diamondBlocks").value = "";
+  document.getElementById("progress").textContent = `現在の進捗は　%です。`;
+});
+
+// 初期表示
+createPyramidFrame();
+
+  </script>
+</body>
+</html>
