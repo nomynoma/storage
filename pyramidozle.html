@@ -101,17 +101,23 @@ a {
   width: 5px;
   height: 5px;
   margin: 0;
-  background: linear-gradient(135deg, #6ce0f1, #4fd2e2, #a0faff); /* グラデーション背景 */
-  border: 0.5px solid #9cf; /* 枠線保持 */
-  box-shadow: inset 0 0 1px #fff, 0 1px 2px rgba(0, 0, 0, 0.4); /* シャドウ効果 */
+  background: linear-gradient(135deg, #6ce0f1, #4fd2e2, #a0faff);
+  border: 0.5px solid #9cf;
+  box-shadow: inset 0 0 1px #fff, 0 1px 2px rgba(0, 0, 0, 0.4);
   opacity: 0;
-  transition: opacity 0.3s ease, background 0.3s ease;
+  transform: translateY(100px) ; /* 初期位置を上にずらす */
+  transition: 
+    opacity 0.3s ease, 
+    background 0.3s ease, 
+    transform 0.3s ease; /* アニメーションに transform を追加 */
   z-index: 1;
 }
 
 .block.visible {
   opacity: 1;
+  transform: translateY(0); /* 元の位置に移動 */
 }
+
 
 input[readonly] {
   background-color: transparent;
@@ -128,11 +134,36 @@ input[readonly] {
   }
 }
 
+
+#toggleButton {
+  cursor: pointer;
+  background-color: transparent;
+  color: white;
+  font-weight: 400;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  margin: 0;
+  font-size: 12px;
+}
+#g_container {
+  width: 100%;
+  height: 300px;
+  display: none; /* 初期状態は非表示 */
+  border-radius: 16px;
+  overflow: hidden; 
+}
+
   </style>
 </head>
 <body>
-  <div class="container">
+ <script src="https://code.highcharts.com/highcharts.js"></script>
+<div class="container">
     <h1><a href="https://x.com/hashtag/%E3%83%94%E3%83%A9%E3%83%9F%E3%83%83%E3%83%89%E3%82%BA%E3%83%AB" target="_blank">#ピラミッドズル</a>どこまで出来たかな？確認ツール</h1>
+    <div style="margin: 1rem; padding: 1rem;">
+<button id="toggleButton">今まで掘ったダイヤ数をグラフで確認▼</button>
+<div id="g_container"></div>
+    </div>
     
     <!-- 入力フォーム: 作成するブロック数 -->
     <div class="texts">
@@ -155,10 +186,110 @@ input[readonly] {
     <div class="pyramid" id="pyramid"></div>
   </div>
 
-<a href="https://nomynoma.github.io/storage/diamondPyramid.md" style="opacity: 0.2;font-size: 10px;text-decoration: none; position: absolute; right: 0px;" target="_blank">chatGPTに作らせた仕様書</a>
-
+<a href="https://nomynoma.github.io/storage/diamondPyramid.md" style="display: none;font-size: 10px;text-decoration: none; position: absolute; right: 0px;" target="_blank">chatGPTに作らせた仕様書</a>
+<br>
+<a href="https://nomynoma.github.io/storage/pyramidozle.html" style="opacity: 0.5;font-size: 10px;text-decoration: none; position: absolute; right: 0px; top: 40px;" target="_blank">軽量版もあるよ</a>
+  
   
   <script>
+// グラフ
+  const times = [
+    0, 3, 4, 5, 6,
+    7, 8, 9, 10, 11,
+    12]; // 回数
+  const diamondTotals = [
+    0, 6537, 7343, 12870, 15252,
+    19620, 19620, 22428, 27067, 32439,
+    40136]; // ダイヤの総数
+  const maxDiamonds = 356409; // 100%のダイヤ数
+
+  // 進捗率を計算
+  const progressPercentage = diamondTotals.map(diamond => (diamond / maxDiamonds) * 100);
+
+  let chart; // チャートインスタンス
+
+  // グラフの描画関数
+  function renderChart() {
+    chart = Highcharts.chart('g_container', {
+      chart: {
+        type: 'area',
+        backgroundColor: 'rgba(0, 0, 0, 0.3)',
+        spacing: [30, 20, 20, 20]
+      },
+      title: {
+        text: 'ダイヤの総数',
+        style: { color: '#ddd',
+               fontSize: '14px'}
+      },
+      xAxis: {
+        title: { text: '' }, // 「回数」のラベルを消す
+        categories: times.map(String),
+        labels: { style: { color: '#ffffff' }},
+        gridLineColor: 'rgba(255, 255, 255, 0.1)'
+      },
+      yAxis: [
+        {
+          title: { text: 'ダイヤ数', style: { color: '#ffffff' }},
+          labels: { style: { color: '#ffffff' }},
+          gridLineColor: 'rgba(100, 100, 100, 0.5)'
+        },
+        {
+          title: { text: '進捗率', style: { color: '#ffffff' }},
+          labels: { format: '{value}%', style: { color: '#ffffff' }},
+          opposite: true,
+          max: 100, // 進捗率の最大値を100%に設定
+          gridLineColor: 'rgba(100, 100, 100, 0.5)'
+        }
+      ],
+      series: [
+        {
+          name: 'ダイヤ',
+          data: diamondTotals,
+          color: '#00eaff',
+          fillColor: {
+            linearGradient: [0, 0, 0, 300],
+            stops: [
+              [0, 'rgba(0, 234, 255, 0.8)'],
+              [1, 'rgba(0, 100, 130, 0.2)']
+            ]
+          }
+        },
+        {
+          name: '進捗率',
+          type: 'line',
+          yAxis: 1, // 右軸（％）を使用
+          data: progressPercentage,
+          color: '#ffff00',
+          dashStyle: 'ShortDash'
+        }
+      ],
+      legend: {
+        enabled: false
+      },
+      credits: { enabled: false }
+    });
+  }
+
+
+  // トグルボタン処理
+  const toggleButton = document.getElementById('toggleButton');
+  const gContainer = document.getElementById('g_container');
+  let visible = false;
+
+  toggleButton.addEventListener('click', () => {
+    visible = !visible;
+    gContainer.style.display = visible ? 'block' : 'none';
+    toggleButton.textContent = visible
+      ? 'グラフを隠す▲'
+      : '今まで掘ったダイヤ数をグラフで確認▼';
+    if (visible && !chart) {
+      renderChart();
+    }
+  });
+
+
+//----------
+// ピラミッド
 const MAX_ROWS = 100;
 const pyramid = document.getElementById("pyramid");
 const diaCountInput = document.getElementById("diaCount");
@@ -166,6 +297,7 @@ const topStartBtn = document.getElementById("topStart");
 const bottomStartBtn = document.getElementById("bottomStart");
 const resetBtn = document.getElementById("reset");
 const cancelBtn = document.getElementById("cancel");
+const delayMs = 1;
 
 let blockRefs = []; // 各段のブロック配列
 let animationTimeouts = []; // アニメーションタイマー格納
@@ -260,7 +392,7 @@ function animateBlocks(direction) {
           block.classList.add("visible");
         }, delay);
         animationTimeouts.push(timeoutId);
-        delay += 1;
+        delay += delayMs;
       });
       totalDiamonds -= rowCost;
     } else {
@@ -270,7 +402,7 @@ function animateBlocks(direction) {
           blocks[i].classList.add("visible");
         }, delay);
         animationTimeouts.push(timeoutId);
-        delay += 1;
+        delay += delayMs;
       }
       break;
     }
@@ -290,6 +422,7 @@ resetBtn.addEventListener("click", () => {
 
 // 初期表示
 createPyramidFrame();
+
 
   </script>
 </body>
