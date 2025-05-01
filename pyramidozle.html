@@ -188,259 +188,267 @@ input[readonly] {
 
   
   <script>
-// グラフ
-  const times = [
-    0, 3, 4, 5, 6,
-    7, 8, 9, 10, 11,
-    12, 13]; // 回数
-  const diamondTotals = [
-    0, 6537, 7343, 12870, 15252,
-    19620, 19620, 22428, 27067, 32439,
-    40136, 50579]; // ダイヤの総数
-  const maxDiamonds = 356409; // 100%のダイヤ数
-
-  // 進捗率を計算
-  const progressPercentage = diamondTotals.map(diamond => (diamond / maxDiamonds) * 100);
-
-  let chart; // チャートインスタンス
-
-  // グラフの描画関数
-  function renderChart() {
-    chart = Highcharts.chart('g_container', {
-      chart: {
-        type: 'area',
-        backgroundColor: 'rgba(0, 0, 0, 0.3)',
-        spacing: [30, 20, 20, 20]
-      },
-      title: {
-        text: 'ダイヤの総数',
-        style: { color: '#ddd',
-               fontSize: '14px'}
-      },
-      xAxis: {
-        title: { text: '' }, // 「回数」のラベルを消す
-        categories: times.map(String),
-        labels: { style: { color: '#ffffff' }},
-        gridLineColor: 'rgba(255, 255, 255, 0.1)'
-      },
-      yAxis: [
-        {
-          title: { text: 'ダイヤ数', style: { color: '#ffffff' }},
+  // グラフ
+    const times = [
+      0, 3, 4, 5, 6,
+      7, 8, 9, 10, 11,
+      12, 13]; // 回数
+    const diamondTotals = [
+      0, 6537, 7343, 12870, 15252,
+      19620, 19620, 22428, 27067, 32439,
+      40136, 50579]; // ダイヤの総数
+    const maxDiamonds = 356409; // 100%のダイヤ数
+  
+    // 進捗率を計算
+    const progressPercentage = diamondTotals.map(total =>
+      Math.min((total / 356409) * 100, 100)
+    );
+  
+    let chart; // チャートインスタンス
+  
+    // グラフの描画関数
+    function renderChart() {
+      chart = Highcharts.chart('g_container', {
+        chart: {
+          type: 'area',
+          backgroundColor: 'rgba(0, 0, 0, 0.3)',
+          spacing: [30, 20, 20, 20]
+        },
+        title: {
+          text: 'ダイヤの総数',
+          style: { color: '#ddd',
+                 fontSize: '14px'}
+        },
+        xAxis: {
+          title: { text: '' }, // 「回数」のラベルを消す
+          categories: times.map(String),
           labels: { style: { color: '#ffffff' }},
-          gridLineColor: 'rgba(100, 100, 100, 0.5)'
+          gridLineColor: 'rgba(255, 255, 255, 0.1)'
         },
-        {
-          title: { text: '進捗率', style: { color: '#ffffff' }},
-          labels: { format: '{value}%', style: { color: '#ffffff' }},
-          opposite: true,
-          max: 100, // 進捗率の最大値を100%に設定
-          gridLineColor: 'rgba(100, 100, 100, 0.5)'
-        }
-      ],
-      series: [
-        {
-          name: 'ダイヤ',
-          data: diamondTotals,
-          color: '#00eaff',
-          fillColor: {
-            linearGradient: [0, 0, 0, 300],
-            stops: [
-              [0, 'rgba(0, 234, 255, 0.8)'],
-              [1, 'rgba(0, 100, 130, 0.2)']
-            ]
+        yAxis: [
+          {
+            title: { text: 'ダイヤ数', style: { color: '#ffffff' }},
+            labels: { style: { color: '#ffffff' }},
+            tickAmount: 5,
+            gridLineColor: 'rgba(100, 100, 100, 0.5)'
+          },
+          {
+            title: { text: '進捗率', style: { color: '#ffffff' }},
+            labels: { format: '{value}%', style: { color: '#ffffff' }},
+            opposite: true,
+            max: 100, // 進捗率の最大値を100%に設定
+            min: 0,
+            endOnTick: false,        // ← 追加で試す
+            startOnTick: false,      // ← 同上
+            maxPadding: 0,           // ← 余白なし
+            tickAmount: 5,
+            gridLineColor: 'rgba(100, 100, 100, 0.5)'
           }
-        },
-        {
-          name: '進捗率',
-          type: 'line',
-          yAxis: 1, // 右軸（％）を使用
-          data: progressPercentage,
-          color: '#ffff00',
-          dashStyle: 'ShortDash'
-        }
-      ],
-      tooltip: {
-        formatter: function () {
-          const index = this.point.index;
-          let diff = 0;
-      
-          if (this.series.name === 'ダイヤ') {
-            if (index > 0) {
-              diff = this.y - diamondTotals[index - 1];
+        ],
+        series: [
+          {
+            name: 'ダイヤ',
+            data: diamondTotals,
+            color: '#00eaff',
+            fillColor: {
+              linearGradient: [0, 0, 0, 300],
+              stops: [
+                [0, 'rgba(0, 234, 255, 0.8)'],
+                [1, 'rgba(0, 100, 130, 0.2)']
+              ]
             }
-            return `${this.series.name}: <b>${this.y}</b><br/>前回との差分: <b>${diff >= 0 ? '+' + diff : diff}</b>`;
+          },
+          {
+            name: '進捗率',
+            type: 'line',
+            yAxis: 1, // 右軸（％）を使用
+            data: progressPercentage,
+            color: '#ffff00',
+            dashStyle: 'ShortDash',
+            zIndex: 1 // ← 上に描画されるように
           }
-      
-          if (this.series.name === '進捗率') {
-            if (index > 0) {
-              diff = this.y - progressPercentage[index - 1];
-            }
-            return `${this.series.name}: <b>${this.y.toFixed(2)}%</b><br/>前回との差分: <b>${diff >= 0 ? '+' + diff.toFixed(2) : diff.toFixed(2)}%</b>`;
-          }
-      
-          return `${this.series.name}: <b>${this.y}</b>`;
+        ],
+  tooltip: {
+    formatter: function () {
+      const index = this.point.index;
+      let diff = 0;
+  
+      if (this.series.name === 'ダイヤ') {
+        if (index > 0) {
+          diff = this.y - diamondTotals[index - 1];
         }
-      },
-      legend: {
-        enabled: false
-      },
-      credits: { enabled: false }
-    });
-  }
-
-
-  // トグルボタン処理
-  const toggleButton = document.getElementById('toggleButton');
-  const gContainer = document.getElementById('g_container');
-  let visible = false;
-
-  toggleButton.addEventListener('click', () => {
-    visible = !visible;
-    gContainer.style.display = visible ? 'block' : 'none';
-    toggleButton.textContent = visible
-      ? 'グラフを隠す▲'
-      : '今まで掘ったダイヤ数をグラフで確認▼';
-    if (visible && !chart) {
-      renderChart();
-    }
-  });
-
-
-//----------
-// ピラミッド
-const MAX_ROWS = 100;
-const pyramid = document.getElementById("pyramid");
-const diaCountInput = document.getElementById("diaCount");
-const topStartBtn = document.getElementById("topStart");
-const bottomStartBtn = document.getElementById("bottomStart");
-const resetBtn = document.getElementById("reset");
-const cancelBtn = document.getElementById("cancel");
-const delayMs = 1;
-
-let blockRefs = []; // 各段のブロック配列
-let animationTimeouts = []; // アニメーションタイマー格納
-
-function getPaintCostPerBlock(row) {
-  const level = row + 1;
-  return ((2 * level - 1 - 1) * 4) / (2 * level - 1);
-}
-
-function getTotalPaintNeeded() {
-  let total = 0;
-  for (let row = 0; row < MAX_ROWS; row++) {
-    const blockCount = row * 2 + 1;
-    const costPerBlock = getPaintCostPerBlock(row);
-    total += blockCount * costPerBlock;
-  }
-  return Math.round(total) + 1;
-}
-
-const totalNeededDia = getTotalPaintNeeded();
-
-function createPyramidFrame() {
-  pyramid.innerHTML = "";
-  blockRefs = [];
-
-  for (let i = 0; i < MAX_ROWS; i++) {
-    const row = document.createElement("div");
-    row.className = "row";
-    const blocks = [];
-
-    const blockCount = i * 2 + 1;
-    for (let j = 0; j < blockCount; j++) {
-      const block = document.createElement("div");
-      block.className = "block";
-      row.appendChild(block);
-      blocks.push(block);
-    }
-
-    if (i % 10 === 9) {
-      // const rowNumber = document.createElement("div");
-      // rowNumber.className = "row-number";
-      // rowNumber.textContent = i + 1;
-      // row.appendChild(rowNumber);
-      const rowNumber = document.createElement("div");
-      rowNumber.className = "row-number";
-
-      const numberText = document.createElement("span");
-      numberText.className = "number-text";
-      numberText.textContent = i + 1;
-
-      rowNumber.appendChild(numberText);
-      row.appendChild(rowNumber);
-
-    
-    }
-
-    pyramid.appendChild(row);
-    blockRefs.push(blocks);
-  }
-}
-
-function clearBlocks() {
-  animationTimeouts.forEach(timeout => clearTimeout(timeout));
-  animationTimeouts = [];
-  blockRefs.flat().forEach(block => block.classList.remove("visible"));
-}
-
-function animateBlocks(direction) {
-  clearBlocks();
-
-  let diamonds = parseInt(diaCountInput.value) || 0;
-  let totalDiamonds = Math.floor(diamonds / 9); // ダイヤモンドブロック数に変換
-  document.getElementById("diamondBlocks").value = totalDiamonds;
-  document.getElementById("progress").textContent =
-    `現在の進捗は${(Math.min(Math.floor(((diamonds / 356409) * 100) * 100) / 100, 100))}%です。`;
-
-  if (totalDiamonds <= 0) return;
-
-  const rows = direction === "top" ? [...blockRefs] : [...blockRefs].reverse();
-  let delay = 0;
-
-  for (let r = 0; r < rows.length; r++) {
-    const realRow = direction === "top" ? r : MAX_ROWS - 1 - r;
-    const blocks = rows[r];
-    const blockCount = blocks.length;
-    const costPerBlock = getPaintCostPerBlock(realRow);
-    const rowCost = blockCount * costPerBlock;
-
-    if (totalDiamonds >= rowCost) {
-      blocks.forEach((block, i) => {
-        const timeoutId = setTimeout(() => {
-          block.classList.add("visible");
-        }, delay);
-        animationTimeouts.push(timeoutId);
-        delay += delayMs;
-      });
-      totalDiamonds -= rowCost;
-    } else {
-      const fillable = Math.floor(totalDiamonds / costPerBlock);
-      for (let i = 0; i < fillable; i++) {
-        const timeoutId = setTimeout(() => {
-          blocks[i].classList.add("visible");
-        }, delay);
-        animationTimeouts.push(timeoutId);
-        delay += delayMs;
+        return `${this.series.name}: <b>${this.y}</b><br/>前回との差分: <b>${diff >= 0 ? '+' + diff : diff}</b>`;
       }
-      break;
+  
+      if (this.series.name === '進捗率') {
+        if (index > 0) {
+          diff = this.y - progressPercentage[index - 1];
+        }
+        return `${this.series.name}: <b>${this.y.toFixed(2)}%</b><br/>前回との差分: <b>${diff >= 0 ? '+' + diff.toFixed(2) : diff.toFixed(2)}%</b>`;
+      }
+  
+      return `${this.series.name}: <b>${this.y}</b>`;
+    }
+  },
+        legend: {
+          enabled: false
+        },
+        credits: { enabled: false }
+      });
+    }
+  
+  
+    // トグルボタン処理
+    const toggleButton = document.getElementById('toggleButton');
+    const gContainer = document.getElementById('g_container');
+    let visible = false;
+  
+    toggleButton.addEventListener('click', () => {
+      visible = !visible;
+      gContainer.style.display = visible ? 'block' : 'none';
+      toggleButton.textContent = visible
+        ? 'グラフを隠す▲'
+        : '今まで掘ったダイヤ数をグラフで確認▼';
+      if (visible && !chart) {
+        renderChart();
+      }
+    });
+  
+  
+  //----------
+  // ピラミッド
+  const MAX_ROWS = 100;
+  const pyramid = document.getElementById("pyramid");
+  const diaCountInput = document.getElementById("diaCount");
+  const topStartBtn = document.getElementById("topStart");
+  const bottomStartBtn = document.getElementById("bottomStart");
+  const resetBtn = document.getElementById("reset");
+  const cancelBtn = document.getElementById("cancel");
+  const delayMs = 1;
+  
+  let blockRefs = []; // 各段のブロック配列
+  let animationTimeouts = []; // アニメーションタイマー格納
+  
+  function getPaintCostPerBlock(row) {
+    const level = row + 1;
+    return ((2 * level - 1 - 1) * 4) / (2 * level - 1);
+  }
+  
+  function getTotalPaintNeeded() {
+    let total = 0;
+    for (let row = 0; row < MAX_ROWS; row++) {
+      const blockCount = row * 2 + 1;
+      const costPerBlock = getPaintCostPerBlock(row);
+      total += blockCount * costPerBlock;
+    }
+    return Math.round(total) + 1;
+  }
+  
+  const totalNeededDia = getTotalPaintNeeded();
+  
+  function createPyramidFrame() {
+    pyramid.innerHTML = "";
+    blockRefs = [];
+  
+    for (let i = 0; i < MAX_ROWS; i++) {
+      const row = document.createElement("div");
+      row.className = "row";
+      const blocks = [];
+  
+      const blockCount = i * 2 + 1;
+      for (let j = 0; j < blockCount; j++) {
+        const block = document.createElement("div");
+        block.className = "block";
+        row.appendChild(block);
+        blocks.push(block);
+      }
+  
+      if (i % 10 === 9) {
+        // const rowNumber = document.createElement("div");
+        // rowNumber.className = "row-number";
+        // rowNumber.textContent = i + 1;
+        // row.appendChild(rowNumber);
+        const rowNumber = document.createElement("div");
+        rowNumber.className = "row-number";
+  
+        const numberText = document.createElement("span");
+        numberText.className = "number-text";
+        numberText.textContent = i + 1;
+  
+        rowNumber.appendChild(numberText);
+        row.appendChild(rowNumber);
+  
+      
+      }
+  
+      pyramid.appendChild(row);
+      blockRefs.push(blocks);
     }
   }
-}
-
-// イベント設定
-topStartBtn.addEventListener("click", () => animateBlocks("top"));
-bottomStartBtn.addEventListener("click", () => animateBlocks("bottom"));
-cancelBtn.addEventListener("click", () => clearBlocks());
-resetBtn.addEventListener("click", () => {
-  clearBlocks();
+  
+  function clearBlocks() {
+    animationTimeouts.forEach(timeout => clearTimeout(timeout));
+    animationTimeouts = [];
+    blockRefs.flat().forEach(block => block.classList.remove("visible"));
+  }
+  
+  function animateBlocks(direction) {
+    clearBlocks();
+  
+    let diamonds = parseInt(diaCountInput.value) || 0;
+    let totalDiamonds = Math.floor(diamonds / 9); // ダイヤモンドブロック数に変換
+    document.getElementById("diamondBlocks").value = totalDiamonds;
+    document.getElementById("progress").textContent =
+      `現在の進捗は${(Math.min(Math.floor(((diamonds / 356409) * 100) * 100) / 100, 100))}%です。`;
+  
+    if (totalDiamonds <= 0) return;
+  
+    const rows = direction === "top" ? [...blockRefs] : [...blockRefs].reverse();
+    let delay = 0;
+  
+    for (let r = 0; r < rows.length; r++) {
+      const realRow = direction === "top" ? r : MAX_ROWS - 1 - r;
+      const blocks = rows[r];
+      const blockCount = blocks.length;
+      const costPerBlock = getPaintCostPerBlock(realRow);
+      const rowCost = blockCount * costPerBlock;
+  
+      if (totalDiamonds >= rowCost) {
+        blocks.forEach((block, i) => {
+          const timeoutId = setTimeout(() => {
+            block.classList.add("visible");
+          }, delay);
+          animationTimeouts.push(timeoutId);
+          delay += delayMs;
+        });
+        totalDiamonds -= rowCost;
+      } else {
+        const fillable = Math.floor(totalDiamonds / costPerBlock);
+        for (let i = 0; i < fillable; i++) {
+          const timeoutId = setTimeout(() => {
+            blocks[i].classList.add("visible");
+          }, delay);
+          animationTimeouts.push(timeoutId);
+          delay += delayMs;
+        }
+        break;
+      }
+    }
+  }
+  
+  // イベント設定
+  topStartBtn.addEventListener("click", () => animateBlocks("top"));
+  bottomStartBtn.addEventListener("click", () => animateBlocks("bottom"));
+  cancelBtn.addEventListener("click", () => clearBlocks());
+  resetBtn.addEventListener("click", () => {
+    clearBlocks();
+    createPyramidFrame();
+    document.getElementById("diamondBlocks").value = "";
+    document.getElementById("progress").textContent = `現在の進捗は　%です。`;
+  });
+  
+  // 初期表示
   createPyramidFrame();
-  document.getElementById("diamondBlocks").value = "";
-  document.getElementById("progress").textContent = `現在の進捗は　%です。`;
-});
-
-// 初期表示
-createPyramidFrame();
-
 
   </script>
 </body>
