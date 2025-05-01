@@ -260,13 +260,25 @@ input[readonly] {
         }
       ],
       tooltip: {
-        pointFormat: '{series.name}: <b>{point.y}</b><br/>',
         formatter: function () {
+          const index = this.point.index;
           let diff = 0;
-          if (this.index > 0) {  // 0番目のデータを除外して差分を計算
-            diff = this.y - diamondTotals[this.index - 1]; // 現在の値と前回の差分
+      
+          if (this.series.name === 'ダイヤ') {
+            if (index > 0) {
+              diff = this.y - diamondTotals[index - 1];
+            }
+            return `${this.series.name}: <b>${this.y}</b><br/>前回との差分: <b>${diff >= 0 ? '+' + diff : diff}</b>`;
           }
-          return this.series.name + ': <b>' + this.y + '</b><br/>前回との差分: <b>' + (diff >= 0 ? '+' + diff : diff) + '</b>';
+      
+          if (this.series.name === '進捗率') {
+            if (index > 0) {
+              diff = this.y - progressPercentage[index - 1];
+            }
+            return `${this.series.name}: <b>${this.y.toFixed(2)}%</b><br/>前回との差分: <b>${diff >= 0 ? '+' + diff.toFixed(2) : diff.toFixed(2)}%</b>`;
+          }
+      
+          return `${this.series.name}: <b>${this.y}</b>`;
         }
       },
       legend: {
