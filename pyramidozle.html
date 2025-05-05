@@ -111,6 +111,9 @@ a {
     background 0.3s ease, 
     transform 0.3s ease; /* アニメーションに transform を追加 */
   z-index: 1;
+  &.odd {
+  background: linear-gradient(135deg, #5ac4e2, #3eaed4, #87d8f2);
+  }
 }
 
 .block.visible {
@@ -359,15 +362,14 @@ input[readonly] {
       for (let j = 0; j < blockCount; j++) {
         const block = document.createElement("div");
         block.className = "block";
+        if(i % 2 === 1) {
+          block.className += " odd";
+        }
         row.appendChild(block);
         blocks.push(block);
       }
   
       if (i % 10 === 9) {
-        // const rowNumber = document.createElement("div");
-        // rowNumber.className = "row-number";
-        // rowNumber.textContent = i + 1;
-        // row.appendChild(rowNumber);
         const rowNumber = document.createElement("div");
         rowNumber.className = "row-number";
   
