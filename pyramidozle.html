@@ -453,6 +453,29 @@ resetBtn.addEventListener("click", () => {
 createPyramidFrame();
 
 
+// URLパラメータで自動描画処理
+function getQueryParams() {
+  const params = {};
+  window.location.search.slice(1).split("&").forEach(part => {
+    const [key, val] = part.split("=");
+    if (key) params[key] = decodeURIComponent(val || "");
+  });
+  return params;
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  const params = getQueryParams();
+  const diamonds = parseInt(params.d, 10);
+
+  if (!isNaN(diamonds)) {
+    diaCountInput.value = diamonds;
+    createPyramidFrame();
+    animateBlocks(params.from === "top" ? "top" : "bottom");
+  }
+});
+
+
+    
   </script>
 </body>
 </html>
