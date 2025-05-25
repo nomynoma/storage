@@ -192,118 +192,191 @@ input[readonly] {
   
   <script>
 // グラフ
-  const times = [
-    0, 3, 4, 5, 6,
-    7, 9, 10, 11, 12,
-    13, 15, 16, 17, 18,
-    19, 20
-  ]; // 回数
-  const diamondTotals = [
-    0, 6537, 7343, 12870, 15252,
-    19620, 22428, 27067, 32439, 40136,
-    50579, 59339, 71856, 77501, 90345,
-    100258, 110957
-  ]; // ダイヤの総数
-  const maxDiamonds = 356409; // 100%のダイヤ数
+Highcharts.setOptions({
+  time: {
+    useUTC: false
+  }
+});
+const times = [
+  0, 3, 4, 5, 6,
+  8, 9, 10, 11, 12,
+  13, 15, 16, 17, 18,
+  19, 20
+]; // 回数
+const dates = [
+  '2025/04/14', '2025/04/17', '2025/04/18', '2025/04/20', '2025/04/21',
+  '2025/04/24', '2025/04/24', '2025/04/25', '2025/04/27', '2025/04/29',
+  '2025/05/01', '2025/05/04', '2025/05/05', '2025/05/06', '2025/05/10',
+  '2025/05/11', '2025/05/12'    
+]; // 日時
+const diamondTotals = [
+  0, 6537, 7343, 12870, 15252,
+  19620, 22428, 27067, 32439, 40136,
+  50579, 59339, 71856, 77501, 90345,
+  100258, 110957
+]; // ダイヤの総数
+const maxDiamonds = 356409; // 100%のダイヤ数
 
-  // 進捗率を計算
-  const progressPercentage = diamondTotals.map(total =>
-    Math.min((total / 356409) * 100, 100)
-  );
+// 進捗率を計算
+const progressPercentage = diamondTotals.map(total =>
+  Math.min((total / maxDiamonds) * 100, 100)
+);
 
-  let chart; // チャートインスタンス
+// 日付配列をDateオブジェクトに変換しタイムスタンプ配列に
+const dateTimestamps = dates.map(d => new Date(d).getTime());
 
-  // グラフの描画関数
-  function renderChart() {
-    chart = Highcharts.chart('g_container', {
-      chart: {
-        type: 'area',
-        backgroundColor: 'rgba(0, 0, 0, 0.3)',
-        spacing: [30, 20, 20, 20]
-      },
-      title: {
-        text: 'ダイヤの納品数',
-        style: { color: '#ddd',
-               fontSize: '14px'}
-      },
-      xAxis: {
-        title: { text: '' }, // 「回数」のラベルを消す
-        categories: times.map(String),
-        labels: { style: { color: '#ffffff' }},
-        gridLineColor: 'rgba(255, 255, 255, 0.1)'
-      },
-      yAxis: [
-        {
-          title: { text: 'ダイヤ数', style: { color: '#00eaff' }},
-          labels: { style: { color: '#00eaff' }},
-          tickAmount: 5,
-          gridLineColor: 'rgba(100, 100, 100, 0.5)'
-        },
-        {
-          title: { text: '進捗率', style: { color: '#ffff00' }},
-          labels: { format: '{value}%', style: { color: '#ffff00' }},
-          opposite: true,
-          max: 100, // 進捗率の最大値を100%に設定
-          min: 0,
-          endOnTick: false,        // ← 追加で試す
-          startOnTick: false,      // ← 同上
-          maxPadding: 0,           // ← 余白なし
-          tickAmount: 5,
-          gridLineColor: 'rgba(100, 100, 100, 0.5)'
+// 日曜日だけのtickPositionsを作成
+const tickPositions = [];
+const startDate = new Date(dates[0]);
+const endDate = new Date(dates[dates.length - 1]);
+
+for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+  if (d.getDay() === 0) { // 日曜日だけ追加
+    tickPositions.push(d.getTime());
+  }
+}
+
+// ｘ軸最小値を追加
+const minDate = new Date('2025/04/13').setHours(0, 0, 0, 0);
+if (!tickPositions.includes(minDate)) {
+  tickPositions.unshift(minDate);
+}
+
+let chart; // チャートインスタンス
+
+// グラフの描画関数
+function renderChart() {
+  chart = Highcharts.chart('g_container', {
+    chart: {
+      type: 'area',
+      backgroundColor: 'rgba(0, 0, 0, 0.3)',
+      spacing: [30, 20, 20, 20]
+    },
+    title: {
+      text: 'ダイヤの納品数',
+      style: { color: '#ddd', fontSize: '14px' }
+    },
+    xAxis: {
+      type: 'datetime',
+      categories: null, // categoriesは使わない
+      tickPositions: tickPositions,
+      min: new Date('2025/04/13').getTime(),
+      labels: {
+        style: { color: 'rgba(255, 255, 255, 0.5)' },
+        formatter: function () {
+          return Highcharts.dateFormat('%m/%d', this.value) + '(日)';
         }
-      ],
-      series: [
-        {
-          name: 'ダイヤ',
-          data: diamondTotals,
-          color: '#00eaff',
-          fillColor: {
-            linearGradient: [0, 0, 0, 300],
-            stops: [
-              [0, 'rgba(0, 234, 255, 0.8)'],
-              [1, 'rgba(0, 100, 130, 0.2)']
-            ]
+      },
+      gridLineColor: 'rgba(255, 255, 255, 0.5)',
+  
+      plotBands: (() => {
+        const bands = [];
+        const start = new Date('2025/04/13').getTime();
+        const end = new Date(dates[dates.length - 1]).getTime();
+        const oneWeek = 7 * 24 * 3600 * 1000;
+        let current = start;
+        let toggle = true;
+        while (current < end) {
+          bands.push({
+            from: current,
+            to: current + oneWeek,
+            color: toggle ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0)', // 薄い白と透明
+            zIndex: 0
+          });
+          current += oneWeek;
+          toggle = !toggle;
+        }
+        return bands;
+      })()
+    },
+    yAxis: [
+      {
+        title: { text: 'ダイヤ数', style: { color: '#00eaff' } },
+        labels: { style: { color: '#00eaff' } },
+        tickAmount: 5,
+        gridLineColor: 'rgba(100, 100, 100, 0.5)'
+      },
+      {
+        title: { text: '進捗率', style: { color: '#ffff00' } },
+        labels: { format: '{value}%', style: { color: '#ffff00' } },
+        opposite: true,
+        max: 100,
+        min: 0,
+        endOnTick: false,
+        startOnTick: false,
+        maxPadding: 0,
+        tickAmount: 5,
+        gridLineColor: 'rgba(100, 100, 100, 0.5)'
+      }
+    ],
+    series: [
+      {
+        name: 'ダイヤ',
+        data: diamondTotals.map((y, i) => [dateTimestamps[i], y]), // [timestamp, value]
+        color: '#00eaff',
+        fillColor: {
+          linearGradient: [0, 0, 0, 300],
+          stops: [
+            [0, 'rgba(0, 234, 255, 0.8)'],
+            [1, 'rgba(0, 100, 130, 0.2)']
+          ]
+        },
+          marker: {
+            enabled: true,
+            radius: 3,
+            fillColor: '#00eaff',
+            lineColor: '#ffffff',
+            lineWidth: 1
           }
-        },
-        {
-          name: '進捗率',
-          type: 'line',
-          yAxis: 1, // 右軸（％）を使用
-          data: progressPercentage,
-          color: '#ffff00',
-          dashStyle: 'ShortDash',
-          zIndex: 1 // ← 上に描画されるように
-        }
-      ],
-tooltip: {
-  formatter: function () {
-    const index = this.point.index;
-    let diff = 0;
-
-    if (this.series.name === 'ダイヤ') {
-      if (index > 0) {
-        diff = this.y - diamondTotals[index - 1];
-      }
-      return `${this.series.name}: <b>${this.y}</b><br/>前回との差分: <b>${diff >= 0 ? '+' + diff : diff}</b>`;
-    }
-
-    if (this.series.name === '進捗率') {
-      if (index > 0) {
-        diff = this.y - progressPercentage[index - 1];
-      }
-      return `${this.series.name}: <b>${this.y.toFixed(2)}%</b><br/>前回との差分: <b>${diff >= 0 ? '+' + diff.toFixed(2) : diff.toFixed(2)}%</b>`;
-    }
-
-    return `${this.series.name}: <b>${this.y}</b>`;
-  }
-},
-      legend: {
-        enabled: false
       },
-      credits: { enabled: false }
-    });
-  }
+      {
+        name: '進捗率',
+        type: 'line',
+        yAxis: 1,
+        data: progressPercentage.map((v, i) => [dateTimestamps[i], v]),
+        color: '#ffff00',
+        dashStyle: 'ShortDash',
+        zIndex: 1,
+        marker: {
+          enabled: true,
+          radius: 4,
+          fillColor: '#ffff00',
+          lineColor: '#333333',
+          lineWidth: 1
+        }
+      }
+    ],
+    tooltip: {
+      formatter: function () {
+        const index = this.point.index;
+        let diff = 0;
 
+        if (this.series.name === 'ダイヤ') {
+          if (index > 0) {
+            diff = this.y - diamondTotals[index - 1];
+            return `第${times[index]}回（${dates[index]}）<br/>${this.series.name}: <b>${this.y}</b><br/>前回との差分: <b>${diff >= 0 ? '+' + diff : diff}</b>`;
+          }
+          return `第${times[index]}回（${dates[index]}）<br/>${this.series.name}: <b>${this.y}</b>`;
+        }
+
+        if (this.series.name === '進捗率') {
+          diff = 0;
+          if (index > 0) {
+            diff = this.y - progressPercentage[index - 1];
+            return `第${times[index]}回（${dates[index]}）<br/>${this.series.name}: <b>${this.y.toFixed(2)}%</b><br/>前回との差分: <b>${diff >= 0 ? '+' + diff.toFixed(2) : diff.toFixed(2)}%</b>`;
+          }
+          return `第${times[index]}回（${dates[index]}）<br/>${this.series.name}: <b>${this.y.toFixed(2)}%</b>`;
+        }
+
+        return `${this.series.name}: <b>${this.y}</b>`;
+      }
+    },
+    legend: {
+      enabled: false
+    },
+    credits: { enabled: false }
+  });
+}
 
   // トグルボタン処理
   const toggleButton = document.getElementById('toggleButton');
@@ -320,6 +393,7 @@ tooltip: {
       renderChart();
     }
   });
+
 
 
 //----------
@@ -477,7 +551,6 @@ window.addEventListener("DOMContentLoaded", () => {
     animateBlocks(params.from === "top" ? "top" : "bottom");
   }
 });
-
 
     
   </script>
