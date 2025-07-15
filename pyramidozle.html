@@ -179,11 +179,12 @@ input[readonly] {
     <div class="texts">
       <div class="controls">
         <label for="blockCount">集めたダイヤ数: </label>
-        <input type="number" id="diaCount" min="1" max="356409" value="277081">/356409<br/><br/>
+        <input type="number" id="diaCount" min="1" max="356409" value="286039">/356409<br/><br/>
     <label for="diamondBlocks">ダイヤモンドブロック数: </label>
     <input type="text" id="diamondBlocks" readonly>/39601
       </div>
       <p id="progress">現在の進捗は　%です。</p>
+      <p >完成まであと　<span style="font-weight: 600;font-size: 30px;">70,370</span>個</p>
     </div>
     
     <div class="buttons">
@@ -210,7 +211,7 @@ const times = [
   13, 15, 16, 17, 18,
   19, 20, 33, 34, 37,
   38, 39, 40, 41, 43,
-  44, 
+  44, 45, 
 ]; // 回数
 const dates = [
   '2025/04/14', '2025/04/17', '2025/04/18', '2025/04/20', '2025/04/21',
@@ -218,7 +219,7 @@ const dates = [
   '2025/05/01', '2025/05/04', '2025/05/05', '2025/05/06', '2025/05/10',
   '2025/05/11', '2025/05/12', '2025/06/06', '2025/06/07', '2025/06/23',
   '2025/07/03', '2025/07/04', '2025/07/05', '2025/07/07', '2025/07/11',
-  '2025/07/14',
+  '2025/07/13', '2025/07/14'
   
 ]; // 日時
 const diamondTotals = [
@@ -227,7 +228,7 @@ const diamondTotals = [
   50579, 59339, 71856, 77501, 90345,
   100258, 110957, 208489, 228489, 236204,
   240530, 244492, 252456, 259805, 268931,
-  277081,
+  277081, 286039
 ]; // ダイヤの総数
 const maxDiamonds = 356409; // 100%のダイヤ数
 
