@@ -245,6 +245,34 @@
             color: #333;
         }
         
+        /* フローティングルーレット画像 */
+        .floating-roulette {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            border: 3px solid #3498db;
+            z-index: 999;
+            opacity: 0;
+            transform: scale(0.8);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .floating-roulette.visible {
+            opacity: 0.8;
+            transform: scale(1);
+        }
+        
+        .floating-roulette:hover {
+            opacity: 1;
+            transform: scale(1.1);
+            box-shadow: 0 12px 35px rgba(52, 152, 219, 0.4);
+        }
+        
         @media (max-width: 768px) {
             .container {
                 margin: 10px;
@@ -269,6 +297,13 @@
             
             .stats-grid {
                 grid-template-columns: 1fr;
+            }
+            
+            .floating-roulette {
+                width: 80px;
+                height: 80px;
+                bottom: 70px;
+                right: 15px;
             }
         }
     </style>
@@ -936,6 +971,57 @@
         });
         
         document.body.appendChild(saveButton);
+        
+        // フローティングルーレット画像を追加
+        const floatingRoulette = document.createElement('img');
+        floatingRoulette.src = 'https://nomynoma.github.io/storage/roulette.png';
+        floatingRoulette.alt = 'ルーレット';
+        floatingRoulette.className = 'floating-roulette';
+        floatingRoulette.title = 'クリックで座標マップセクションに戻る';
+        
+        // フローティング画像のクリックイベント
+        floatingRoulette.addEventListener('click', function() {
+            document.querySelector('.section').scrollIntoView({
+                behavior: 'smooth'
+            });
+        });
+        
+        document.body.appendChild(floatingRoulette);
+        
+        // スクロール位置に応じてフローティング画像を表示/非表示
+        let mapSection = null;
+        
+        function checkFloatingRoulette() {
+            if (!mapSection) {
+                mapSection = document.querySelector('.section');
+            }
+            
+            if (mapSection) {
+                const mapRect = mapSection.getBoundingClientRect();
+                const isMapVisible = mapRect.bottom > 0 && mapRect.top < window.innerHeight;
+                
+                if (!isMapVisible && window.scrollY > 300) {
+                    floatingRoulette.classList.add('visible');
+                } else {
+                    floatingRoulette.classList.remove('visible');
+                }
+            }
+        }
+        
+        // スクロールイベントリスナー
+        let ticking = false;
+        window.addEventListener('scroll', function() {
+            if (!ticking) {
+                requestAnimationFrame(function() {
+                    checkFloatingRoulette();
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        });
+        
+        // 初期チェック
+        setTimeout(checkFloatingRoulette, 100);
     </script>
 </body>
 </html>
