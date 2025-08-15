@@ -234,8 +234,8 @@
             position: fixed;
             top: 20px;
             right: 20px;
-            width: 25vw;
-            height: 25vw;
+            width: 15vw;
+            height: 15vw;
             border-radius: 50%;
             box-shadow: 0 8px 25px rgba(0,0,0,0.3);
             border: 3px solid #3498db;
@@ -248,7 +248,7 @@
         }
         
         .floating-roulette.visible {
-            opacity: 0.8;
+            opacity: 0.3;
             transform: scale(1);
         }
         
@@ -284,8 +284,8 @@
             }
             
             .floating-roulette {
-                width: 35vw;
-                height: 35vw;
+                width: 20vw;
+                height: 20vw;
                 top: 15px;
                 right: 15px;
             }
@@ -856,6 +856,222 @@
                     <div class="highlight">
                         ➡️ 推定アルゴリズムにより100%白以外確定！特に緑色への期待大！
                     </div>
+                    
+                    <h4>🎨 各色到達確率ランキング TOP5</h4>
+                    
+                    <h5>🥇 次が金色になる確率が高い前座標一覧</h5>
+                    <table style="margin: 15px auto; width: 95%; font-size: 0.9em;">
+                        <thead>
+                            <tr>
+                                <th>順位</th>
+                                <th>座標(矢印)</th>
+                                <th>推定確率</th>
+                                <th>実データ確率</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1位</td>
+                                <td>16(中央)</td>
+                                <td>3.92%</td>
+                                <td>33.33%</td>
+                            </tr>
+                            <tr>
+                                <td>2位</td>
+                                <td>15(中央)</td>
+                                <td>3.92%</td>
+                                <td>14.29%</td>
+                            </tr>
+                            <tr>
+                                <td>3位</td>
+                                <td>0(中央)</td>
+                                <td>3.92%</td>
+                                <td>0.00%</td>
+                            </tr>
+                            <tr>
+                                <td>4位</td>
+                                <td>-15(中央)</td>
+                                <td>3.92%</td>
+                                <td>0.00%</td>
+                            </tr>
+                            <tr>
+                                <td>5位</td>
+                                <td>2(中央)</td>
+                                <td>3.92%</td>
+                                <td>0.00%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <h5>🔴 次が赤色になる確率が高い前座標一覧</h5>
+                    <table style="margin: 15px auto; width: 95%; font-size: 0.9em;">
+                        <thead>
+                            <tr>
+                                <th>順位</th>
+                                <th>座標(矢印)</th>
+                                <th>推定確率</th>
+                                <th>実データ確率</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1位</td>
+                                <td>-14(中央)</td>
+                                <td>52.83%</td>
+                                <td>0.00%</td>
+                            </tr>
+                            <tr>
+                                <td>2位</td>
+                                <td>-14(左)</td>
+                                <td>52.50%</td>
+                                <td>16.67%</td>
+                            </tr>
+                            <tr>
+                                <td>3位</td>
+                                <td>-13(中央)</td>
+                                <td>48.92%</td>
+                                <td>0.00%</td>
+                            </tr>
+                            <tr>
+                                <td>4位</td>
+                                <td>-13(左)</td>
+                                <td>48.58%</td>
+                                <td>16.67%</td>
+                            </tr>
+                            <tr>
+                                <td>5位</td>
+                                <td>-12(中央)</td>
+                                <td>47.50%</td>
+                                <td>0.00%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <h5>🔵 次が青色になる確率が高い前座標一覧</h5>
+                    <table style="margin: 15px auto; width: 95%; font-size: 0.9em;">
+                        <thead>
+                            <tr>
+                                <th>順位</th>
+                                <th>座標(矢印)</th>
+                                <th>推定確率</th>
+                                <th>実データ確率</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1位</td>
+                                <td>3(中央)</td>
+                                <td>12.08%</td>
+                                <td>33.33%</td>
+                            </tr>
+                            <tr>
+                                <td>2位</td>
+                                <td>-3(中央)</td>
+                                <td>12.08%</td>
+                                <td>20.00%</td>
+                            </tr>
+                            <tr>
+                                <td>3位</td>
+                                <td>-8(中央)</td>
+                                <td>12.08%</td>
+                                <td>0.00%</td>
+                            </tr>
+                            <tr>
+                                <td>4位</td>
+                                <td>8(中央)</td>
+                                <td>12.08%</td>
+                                <td>0.00%</td>
+                            </tr>
+                            <tr>
+                                <td>5位</td>
+                                <td>-2(中央)</td>
+                                <td>12.08%</td>
+                                <td>0.00%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <h5>🟢 次が緑色になる確率が高い前座標一覧</h5>
+                    <table style="margin: 15px auto; width: 95%; font-size: 0.9em;">
+                        <thead>
+                            <tr>
+                                <th>順位</th>
+                                <th>座標(矢印)</th>
+                                <th>推定確率</th>
+                                <th>実データ確率</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1位</td>
+                                <td>13(中央)</td>
+                                <td>57.42%</td>
+                                <td>25.00%</td>
+                            </tr>
+                            <tr>
+                                <td>2位</td>
+                                <td>14(中央)</td>
+                                <td>56.33%</td>
+                                <td>33.33%</td>
+                            </tr>
+                            <tr>
+                                <td>3位</td>
+                                <td>12(中央)</td>
+                                <td>56.00%</td>
+                                <td>28.57%</td>
+                            </tr>
+                            <tr>
+                                <td>4位</td>
+                                <td>11(中央)</td>
+                                <td>54.58%</td>
+                                <td>20.00%</td>
+                            </tr>
+                            <tr>
+                                <td>5位</td>
+                                <td>10(中央)</td>
+                                <td>53.17%</td>
+                                <td>0.00%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <h4>📊 現在位置での各色確率比較</h4>
+                    <table style="margin: 20px auto; width: 90%;">
+                        <thead>
+                            <tr>
+                                <th>色</th>
+                                <th>推定確率</th>
+                                <th>実データ確率</th>
+                                <th>実績</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>🟢 緑色</td>
+                                <td><strong>39.67%</strong></td>
+                                <td>20.00%</td>
+                                <td>1/5回</td>
+                            </tr>
+                            <tr>
+                                <td>🔴 赤色</td>
+                                <td>0.00%</td>
+                                <td>20.00%</td>
+                                <td>1/5回</td>
+                            </tr>
+                            <tr>
+                                <td>🔵 青色</td>
+                                <td>0.00%</td>
+                                <td>20.00%</td>
+                                <td>1/5回</td>
+                            </tr>
+                            <tr>
+                                <td>🥇 金色</td>
+                                <td>0.00%</td>
+                                <td>0.00%</td>
+                                <td>0/5回</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
