@@ -135,6 +135,20 @@
             box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
         }
         
+        .success table {
+            background: white;
+            color: #333;
+        }
+        
+        .success table th {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+        }
+        
+        .success table td {
+            color: #333;
+        }
+        
         .code {
             background: #2c3e50;
             color: #ecf0f1;
@@ -178,22 +192,6 @@
             margin: 30px 0;
         }
         
-        .roulette-image a {
-            display: inline-block;
-            padding: 15px 30px;
-            background: linear-gradient(135deg, #3498db, #2980b9);
-            color: white;
-            text-decoration: none;
-            border-radius: 25px;
-            font-weight: bold;
-            transition: transform 0.3s ease;
-        }
-        
-        .roulette-image a:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(52, 152, 219, 0.3);
-        }
-        
         .emoji {
             font-size: 1.2em;
         }
@@ -231,27 +229,13 @@
             color: #333;
         }
         
-        .success table {
-            background: white;
-            color: #333;
-        }
-        
-        .success table th {
-            background: linear-gradient(135deg, #3498db, #2980b9);
-            color: white;
-        }
-        
-        .success table td {
-            color: #333;
-        }
-        
         /* フローティングルーレット画像 */
         .floating-roulette {
             position: fixed;
-            bottom: 80px;
+            top: 20px;
             right: 20px;
-            width: 120px;
-            height: 120px;
+            width: 25vw;
+            height: 25vw;
             border-radius: 50%;
             box-shadow: 0 8px 25px rgba(0,0,0,0.3);
             border: 3px solid #3498db;
@@ -260,6 +244,7 @@
             transform: scale(0.8);
             transition: all 0.3s ease;
             cursor: pointer;
+            object-fit: cover;
         }
         
         .floating-roulette.visible {
@@ -269,7 +254,8 @@
         
         .floating-roulette:hover {
             opacity: 1;
-            transform: scale(1.1);
+            width: 50vw;
+            height: 50vw;
             box-shadow: 0 12px 35px rgba(52, 152, 219, 0.4);
         }
         
@@ -300,10 +286,15 @@
             }
             
             .floating-roulette {
-                width: 80px;
-                height: 80px;
-                bottom: 70px;
+                width: 35vw;
+                height: 35vw;
+                top: 15px;
                 right: 15px;
+            }
+            
+            .floating-roulette:hover {
+                width: 70vw;
+                height: 70vw;
             }
         }
     </style>
@@ -636,6 +627,26 @@
                         </tr>
                     </tbody>
                 </table>
+
+                <h4>🧮 完全な推定式</h4>
+                <div class="code">最終座標 = 現在座標 + 基本移動距離 + 座標補正 + 矢印補正
+
+基本移動距離 = {
+  15%の確率: [0, -2, 1, -5, -1, -4] のいずれか
+  85%の確率: RAND(-30, +29)
+}
+
+座標補正 = {
+  if (現在座標 >= 15)  → RAND(-15, -5)
+  if (現在座標 <= -15) → RAND(+15, +25)
+  if (現在座標 == 8)   → RAND(-5, +1)
+  if (|現在座標| <= 3) → RAND(-2, +2)
+  else                → 0
+}
+
+矢印補正 = 矢印位置 × 1.45 + 微小ランダム誤差
+
+座標制限 = MAX(-16, MIN(+16, 計算結果))</div>
             </div>
 
             <!-- 攻略戦略 -->
@@ -741,8 +752,8 @@
                 </table>
 
                 <div class="success">
-                    <h4>🔥 超激熱！推定アルゴリズム100%確定パターン</h4>
-                    <p><strong>推定アルゴリズムによる計算結果（14種類の真の100%パターン）</strong></p>
+                    <h4>🔥 超激熱！推定アルゴリズム100%～80%確定パターン</h4>
+                    <p><strong>推定アルゴリズムによる計算結果（全パターン）</strong></p>
                     
                     <table>
                         <thead>
@@ -754,29 +765,83 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td><strong>5(右)</strong></td>
+                            <tr style="background: #ff6b6b; color: white;">
+                                <td><strong>-9(左)</strong></td>
                                 <td><strong>100.0%</strong></td>
-                                <td>緑28.3% + 赤11.3%</td>
-                                <td>極端座標補正効果</td>
+                                <td>赤35.4% + 緑4.3%</td>
+                                <td>負座標回帰法則</td>
                             </tr>
-                            <tr>
-                                <td><strong>7(左)</strong></td>
+                            <tr style="background: #ff6b6b; color: white;">
+                                <td><strong>-5(左)</strong></td>
                                 <td><strong>100.0%</strong></td>
-                                <td>緑26.9% + 赤12.7%</td>
-                                <td>負バイアス + 回帰</td>
+                                <td>赤29.7% + 緑9.9%</td>
+                                <td>中央回帰 + 負バイアス</td>
                             </tr>
-                            <tr>
+                            <tr style="background: #ff6b6b; color: white;">
                                 <td><strong>-12(左)</strong></td>
                                 <td><strong>100.0%</strong></td>
                                 <td>赤44.7%</td>
                                 <td>強制正方向移動</td>
                             </tr>
-                            <tr>
+                            <tr style="background: #ff6b6b; color: white;">
+                                <td><strong>-4(右)</strong></td>
+                                <td><strong>100.0%</strong></td>
+                                <td>赤24.1% + 緑15.6%</td>
+                                <td>正バイアス効果</td>
+                            </tr>
+                            <tr style="background: #ff6b6b; color: white;">
                                 <td><strong>11(右)</strong></td>
                                 <td><strong>100.0%</strong></td>
                                 <td>緑36.8% + 赤2.8%</td>
                                 <td>正バイアス + 回帰</td>
+                            </tr>
+                            <tr style="background: #ff6b6b; color: white;">
+                                <td><strong>0(右)</strong></td>
+                                <td><strong>100.0%</strong></td>
+                                <td>緑21.2% + 赤18.4%</td>
+                                <td>基準点 + 正バイアス</td>
+                            </tr>
+                            <tr style="background: #ff6b6b; color: white;">
+                                <td><strong>-16(右)</strong></td>
+                                <td><strong>100.0%</strong></td>
+                                <td>緑19.8% + 赤19.8%</td>
+                                <td>極端回帰 + 正バイアス</td>
+                            </tr>
+                            <tr style="background: #ff6b6b; color: white;">
+                                <td><strong>12(右)</strong></td>
+                                <td><strong>100.0%</strong></td>
+                                <td>緑38.2% + 赤1.4%</td>
+                                <td>回帰傾向 + 正バイアス</td>
+                            </tr>
+                            <tr style="background: #ff6b6b; color: white;">
+                                <td><strong>6(左)</strong></td>
+                                <td><strong>100.0%</strong></td>
+                                <td>緑25.5% + 赤14.2%</td>
+                                <td>負バイアス効果</td>
+                            </tr>
+                            <tr style="background: #ff6b6b; color: white;">
+                                <td><strong>10(左)</strong></td>
+                                <td><strong>100.0%</strong></td>
+                                <td>緑31.2% + 赤8.5%</td>
+                                <td>負バイアス + 回帰</td>
+                            </tr>
+                            <tr style="background: #ff6b6b; color: white;">
+                                <td><strong>-7(右)</strong></td>
+                                <td><strong>100.0%</strong></td>
+                                <td>赤28.3% + 緑11.3%</td>
+                                <td>正バイアス + 回帰</td>
+                            </tr>
+                            <tr style="background: #ff6b6b; color: white;">
+                                <td><strong>13(右)</strong></td>
+                                <td><strong>100.0%</strong></td>
+                                <td>緑39.7%</td>
+                                <td>極端座標回帰 + 正バイアス</td>
+                            </tr>
+                            <tr style="background: #ffa726; color: white;">
+                                <td><strong>-1(中央)</strong></td>
+                                <td><strong>80.5%</strong></td>
+                                <td>緑37.6% + 赤29.4%</td>
+                                <td>中央 + 軽微回帰</td>
                             </tr>
                         </tbody>
                     </table>
@@ -821,26 +886,6 @@
                 </div>
                 
                 <p>完全な予測は困難ですが、統計的傾向を活用することで有意な優位性を得られます。特に色予測では14の100%確定パターンが発見されており、極めて高い予測精度を実現できます。</p>
-                
-                <h4>🧮 完全な推定式</h4>
-                <div class="code">最終座標 = 現在座標 + 基本移動距離 + 座標補正 + 矢印補正
-
-基本移動距離 = {
-  15%の確率: [0, -2, 1, -5, -1, -4] のいずれか
-  85%の確率: RAND(-30, +29)
-}
-
-座標補正 = {
-  if (現在座標 >= 15)  → RAND(-15, -5)
-  if (現在座標 <= -15) → RAND(+15, +25)
-  if (現在座標 == 8)   → RAND(-5, +1)
-  if (|現在座標| <= 3) → RAND(-2, +2)
-  else                → 0
-}
-
-矢印補正 = 矢印位置 × 1.45 + 微小ランダム誤差
-
-座標制限 = MAX(-16, MIN(+16, 計算結果))</div>
             </div>
 
             <!-- まとめ -->
@@ -977,14 +1022,7 @@
         floatingRoulette.src = 'https://nomynoma.github.io/storage/roulette.png';
         floatingRoulette.alt = 'ルーレット';
         floatingRoulette.className = 'floating-roulette';
-        floatingRoulette.title = 'クリックで座標マップセクションに戻る';
-        
-        // フローティング画像のクリックイベント
-        floatingRoulette.addEventListener('click', function() {
-            document.querySelector('.section').scrollIntoView({
-                behavior: 'smooth'
-            });
-        });
+        floatingRoulette.title = 'ルーレット座標マップ';
         
         document.body.appendChild(floatingRoulette);
         
@@ -1024,4 +1062,16 @@
         setTimeout(checkFloatingRoulette, 100);
     </script>
 </body>
-</html>
+</html>5(右)</strong></td>
+                                <td><strong>100.0%</strong></td>
+                                <td>緑28.3% + 赤11.3%</td>
+                                <td>極端座標補正効果</td>
+                            </tr>
+                            <tr style="background: #ff6b6b; color: white;">
+                                <td><strong>7(左)</strong></td>
+                                <td><strong>100.0%</strong></td>
+                                <td>緑26.9% + 赤12.7%</td>
+                                <td>負バイアス + 回帰</td>
+                            </tr>
+                            <tr style="background: #ff6b6b; color: white;">
+                                <td><strong>
