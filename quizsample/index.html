@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>クイズアプリ</title>
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; margin:0; padding:20px; background:#f0f2f5; min-height:100vh; box-sizing:border-box;}
+    .container { background:white; border-radius:15px; padding:40px; box-shadow:0 10px 30px rgba(0,0,0,0.2); width:90%; max-width:400px; margin:0 auto; box-sizing:border-box; }
+    h1 { color:#333; text-align:center; margin-bottom:30px; font-size:26px;}
+    .screen { display:none; }
+    .screen.active { display:block; }
+    .btn { background:#667eea; color:white; border:none; padding:15px 30px; font-size:18px; border-radius:8px; cursor:pointer; transition:all 0.3s; display:block; margin:20px auto; min-width:200px; box-sizing:border-box;}
+    .btn:hover { background:#5568d3; transform:translateY(-2px); box-shadow:0 5px 15px rgba(102,126,234,0.4);}
+    .choice-btn { width:100%; margin:10px 0; text-align:left; background:#f8f9fa; color:#333; padding:15px 20px; position:relative; border-radius:8px; cursor:pointer; box-sizing:border-box;}
+    .choice-btn:hover { background:#e9ecef; transform:translateY(-1px);}
+    .choice-btn.selected { background:#d4e7ff; border:2px solid #667eea; }
+    .choice-btn.image-choice { padding:10px; text-align:center; height:auto; }
+    .choice-btn.image-choice img { width:100%; max-width:400px; height:250px; object-fit:cover; border-radius:8px; display:block; margin:0 auto;}
+    .image-grid { display:grid; grid-template-columns:1fr; gap:15px; margin-bottom:20px;}
+    .question-number { color:#667eea; font-size:16px; font-weight:bold; margin-bottom:10px; }
+    .question-type-badge { display:inline-block; background:#ffc107; color:#333; padding:6px 16px; border-radius:12px; font-size:14px; font-weight:bold; margin-left:10px;}
+    .question-type-badge.single { background:#17a2b8; color:white; }
+    .question-type-badge.multiple { background:#ff6b6b; color:white; }
+    .question-text { font-size:22px; color:#333; margin-bottom:30px; line-height:1.6;}
+    .result { font-size:20px; padding:20px; border-radius:8px; margin:20px 0; text-align:center; font-weight:bold;}
+    .result.correct { background:#d4edda; color:#155724; border:2px solid #c3e6cb;}
+    .result.incorrect { background:#f8d7da; color:#721c24; border:2px solid #f5c6cb;}
+    .score { font-size:48px; color:#667eea; text-align:center; margin:30px 0; font-weight:bold;}
+    .score-text { font-size:24px; color:#666; text-align:center; margin-bottom:30px;}
+    .loading { text-align:center; padding:40px; font-size:18px; color:#666;}
+    .submit-btn { background:#28a745; margin-top:20px;}
+    .submit-btn:hover { background:#218838; }
+    .multiple-instruction { background:#ffe6e6; border:2px solid #ff6b6b; padding:12px 20px; border-radius:8px; margin-bottom:20px; color:#c92a2a; font-size:16px; font-weight:bold; text-align:center;}
+    @media (max-width:600px) {
+      body { padding:10px; min-height:auto;}
+      h1 { font-size:22px;}
+      .question-text { font-size:18px; margin-bottom:20px;}
+      .container { padding:20px;}
+      .btn { padding:12px 20px; font-size:16px; min-width:100%;}
+      .score { font-size:36px;}
+      .score-text { font-size:18px;}
+      .result { font-size:16px; padding:15px;}
+      .image-grid { grid-template-columns:1fr; gap:10px;}
+      .choice-btn.image-choice img { height:auto; max-height:300px;}
+      .choice-btn.image-choice { padding:5px;}
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- スタート画面 -->
+    <div id="startScreen" class="screen active">
+      <h1>📚 クイズチャレンジ</h1>
+      <p style="text-align:center; font-size:18px; color:#666; margin-bottom:30px;">
+        初級 → 中級 → 上級の3セクションに挑戦！<br>
+        各セクション10問正解で次に進みます。
+      </p>
+      <button class="btn" onclick="startQuiz()">Start!</button>
+    </div>
+
+    <!-- 問題画面 -->
+    <div id="questionScreen" class="screen">
+      <div class="question-number" id="questionNumber"></div>
+      <div id="multipleInstruction" class="multiple-instruction" style="display:none;">
+        🔴 複数選択問題：正解と思うものをすべて選んでから「解答する」ボタンを押してください
+      </div>
+      <div class="question-text" id="questionText"></div>
+      <div id="choices"></div>
+      <div id="feedback"></div>
+    </div>
+
+    <!-- 結果画面 -->
+    <div id="resultScreen" class="screen">
+      <h1>🎉 セクションクリア！</h1>
+      <div class="score" id="finalScore"></div>
+      <div class="score-text" id="sectionText"></div>
+      <button class="btn" onclick="restartQuiz()">もう一度やる</button>
+    </div>
+
+    <div id="loading" class="loading">問題を読み込んでいます...</div>
+  </div>
+
+<script>
+let sections = ['beginner','intermediate','advanced'];
+let currentSectionIndex = 0;
+let questions = [];
+let currentQuestion = 0;
+let score = 0;
+let answered = false;
+let selectedChoices = [];
+
+// 画面切替
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.getElementById('loading').style.display='none';
+}
+
+function startQuiz(){
+  currentSectionIndex=0;
+  loadSection(sections[currentSectionIndex]);
+}
+
+function loadSection(section){
+  document.getElementById('loading').style.display='block';
+  showScreen('loading');
+  google.script.run.withSuccessHandler(function(data){
+    questions = data;
+    currentQuestion = 0;
+    score = 0;
+    showQuestion();
+  }).withFailureHandler(function(err){
+    alert('問題の読み込みに失敗しました: '+err);
+    showScreen('startScreen');
+  }).getQuestions(section);
+}
+
+function showQuestion(){
+  if(currentQuestion>=questions.length){
+    // セクション終了
+    currentSectionIndex++;
+    if(currentSectionIndex<sections.length){
+      alert('セクションクリア！次のセクションに進みます');
+      loadSection(sections[currentSectionIndex]);
+    }else{
+      showFinalResult();
+    }
+    return;
+  }
+
+  answered=false;
+  selectedChoices=[];
+  const q=questions[currentQuestion];
+  const isMultiple = q.selectionType==='multiple';
+  const isImage = q.displayType==='image';
+
+  let typeLabel='', typeBadgeClass='';
+  if(isMultiple && isImage){ typeLabel='複数選択・画像'; typeBadgeClass='multiple';}
+  else if(isMultiple && !isImage){ typeLabel='複数選択・テキスト'; typeBadgeClass='multiple';}
+  else if(!isMultiple && isImage){ typeLabel='1つ選択・画像'; typeBadgeClass='single';}
+  else{ typeLabel='1つ選択・テキスト'; typeBadgeClass='single';}
+
+  document.getElementById('questionNumber').innerHTML=
+    `問題 ${currentQuestion+1} / ${questions.length}<span class="question-type-badge ${typeBadgeClass}">${typeLabel}</span>`;
+  document.getElementById('questionText').textContent=q.question;
+  document.getElementById('feedback').innerHTML='';
+  document.getElementById('multipleInstruction').style.display = isMultiple?'block':'none';
+
+  const choicesDiv=document.getElementById('choices');
+  if(isImage || true){
+    let html='<div class="image-grid">';
+    Object.keys(q.choiceMap).forEach(label=>{
+      html+=`<button class="btn choice-btn ${isImage?'image-choice':''}" onclick="${isMultiple?`toggleChoice('${label}')`:`checkAnswer('${label}')`}">
+        ${isImage?`<img src="${q.choiceMap[label]}" alt="選択肢${label}" onerror="this.src='https://via.placeholder.com/400x250?text=画像読込エラー'"><div style="margin-top:8px;font-weight:bold;font-size:18px;">${label}</div>`:`${label}: ${q.choiceMap[label]}` }
+      </button>`;
+    });
+    html+='</div>';
+    if(isMultiple) html+=`<button id="submitBtn" class="btn submit-btn" onclick="submitMultipleAnswer()">解答する</button>`;
+    choicesDiv.innerHTML=html;
+  }
+
+  showScreen('questionScreen');
+}
+
+// 複数選択
+function toggleChoice(choice){
+  if(answered) return;
+  const idx = selectedChoices.indexOf(choice);
+  if(idx>-1) selectedChoices.splice(idx,1); else selectedChoices.push(choice);
+  updateChoiceButtons();
+}
+
+function updateChoiceButtons(){
+  const buttons = document.querySelectorAll('.choice-btn:not(.submit-btn)');
+  const labels = Object.keys(questions[currentQuestion].choiceMap);
+  buttons.forEach((btn,i)=>{
+    btn.classList.toggle('selected', selectedChoices.includes(labels[i]));
+  });
+}
+
+function submitMultipleAnswer(){
+  if(answered) return;
+  if(selectedChoices.length===0){ alert('少なくとも1つ選択してください'); return;}
+  answered=true;
+  const q=questions[currentQuestion];
+  const correct = q.answer.split(',').map(a=>a.trim());
+  const isCorrect = selectedChoices.length===correct.length && selectedChoices.every(c=>correct.includes(c));
+  const feedbackDiv = document.getElementById('feedback');
+  feedbackDiv.innerHTML = isCorrect ? 
+    `<div class="result correct">✓ 正解！</div><button class="btn" onclick="nextQuestion()">次へ</button>` :
+    `<div class="result incorrect">✗ 不正解！正解は ${correct.join(', ')} です</div><button class="btn" onclick="nextQuestion()">次へ</button>`;
+  const submitBtn=document.getElementById('submitBtn'); if(submitBtn) submitBtn.style.display='none';
+  if(isCorrect) score++;
+}
+
+function checkAnswer(label){
+  if(answered) return;
+  answered=true;
+  const q=questions[currentQuestion];
+  const feedbackDiv=document.getElementById('feedback');
+  if(q.answer.split(',').includes(label)){ score++; feedbackDiv.innerHTML=`<div class="result correct">✓ 正解！</div><button class="btn" onclick="nextQuestion()">次へ</button>`;}
+  else{ feedbackDiv.innerHTML=`<div class="result incorrect">✗ 不正解！正解は ${q.answer} です</div><button class="btn" onclick="nextQuestion()">次へ</button>`;}
+}
+
+function nextQuestion(){ currentQuestion++; showQuestion(); }
+
+function showFinalResult(){
+  document.getElementById('finalScore').textContent = ''; // スコア表示を空に
+  document.getElementById('sectionText').textContent = 'クリアおめでとう！';
+  showScreen('resultScreen');
+}
+
+function restartQuiz(){ showScreen('startScreen'); }
+
+document.getElementById('loading').style.display='none';
+</script>
+</body>
+</html>
