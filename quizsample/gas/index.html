@@ -57,12 +57,20 @@ h1 { color:#333; margin-bottom:30px; font-size:26px;}
 
   <!-- ニックネーム入力画面 -->
   <div id="nicknameScreen" class="screen active">
-    <h1>📝 ニックネーム入力</h1>
-    <p style="font-size:18px; color:#666; margin-bottom:30px;">
-      合格証明書に表示するニックネームを入力してください
-    </p>
-    <input type="text" id="nicknameInput" placeholder="ニックネームを入力" style="width:100%; max-width:300px; padding:15px; font-size:18px; border:2px solid #667eea; border-radius:8px; margin-bottom:20px; box-sizing:border-box; text-align:center;">
-    <button class="btn" onclick="submitNickname()">次へ</button>
+    <div id="nicknameForm">
+      <h1>📝 ニックネーム入力</h1>
+      <p style="font-size:18px; color:#666; margin-bottom:30px;">
+        合格証明書に表示するニックネームを入力してください
+      </p>
+      <input type="text" id="nicknameInput" placeholder="ニックネームを入力" style="width:100%; max-width:300px; padding:15px; font-size:18px; border:2px solid #667eea; border-radius:8px; margin-bottom:20px; box-sizing:border-box; text-align:center;">
+      <button class="btn" onclick="submitNickname()">次へ</button>
+    </div>
+    <div id="preparingMessage" style="display:none;">
+      <h1>⏳ 問題作成中...</h1>
+      <p style="font-size:18px; color:#666; margin-top:30px;">
+        しばらくお待ちください
+      </p>
+    </div>
   </div>
 
   <!-- ジャンル選択画面 -->
@@ -95,6 +103,7 @@ h1 { color:#333; margin-bottom:30px; font-size:26px;}
     <h1>😢 不合格</h1>
     <div class="score-text" id="failResultText"></div>
     <p style="font-size:18px; color:#666; margin:20px 0;">10問全問正解で次のレベルへ進めます</p>
+    <button class="btn" style="background:#1DA1F2;" onclick="shareFailToX()">𝕏 で共有する</button>
     <button class="btn" onclick="retryLevel()">もう一度挑戦する</button>
     <button class="btn" onclick="restartQuiz()" style="background:#999;">最初から解く</button>
   </div>
@@ -112,12 +121,17 @@ h1 { color:#333; margin-bottom:30px; font-size:26px;}
     </div>
     <!-- ボタンエリア -->
     <div class="button-area">
+      <button class="btn" style="background:#1DA1F2;" onclick="shareToX()">𝕏 で共有する</button>
       <button class="btn" id="certificateNextBtn" onclick="nextSection()">次のレベルへ</button>
       <button class="btn" id="certificateRestartBtn" onclick="restartQuiz()">最初からときなおす</button>
     </div>
   </div>
 
-  <div id="loading" class="loading">問題を読み込んでいます...</div>
+  <!-- ローディング画面 -->
+  <div id="loading" class="screen">
+    <div class="loading">問題を読み込んでいます...</div>
+  </div>
+
 </div>
 
 <script>
@@ -136,13 +150,6 @@ function showScreen(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   const el = document.getElementById(id);
   if(el) el.classList.add('active');
-
-  // Loading は表示する画面かどうかで切り替え
-  if(id === 'loading'){
-    document.getElementById('loading').style.display='block';
-  } else {
-    document.getElementById('loading').style.display='none';
-  }
 }
 
 // ニックネーム送信
@@ -157,7 +164,17 @@ function submitNickname(){
     return;
   }
   nickname = input;
-  showScreen('genreScreen');
+
+  // フォームを非表示にして「問題作成中」メッセージを表示
+  document.getElementById('nicknameForm').style.display = 'none';
+  document.getElementById('preparingMessage').style.display = 'block';
+
+  // 少し待ってからジャンル選択画面へ
+  setTimeout(() => {
+    document.getElementById('nicknameForm').style.display = 'block';
+    document.getElementById('preparingMessage').style.display = 'none';
+    showScreen('genreScreen');
+  }, 300);
 }
 
 // ジャンル選択
@@ -169,10 +186,8 @@ function selectGenre(genre){
 
 // --- レベル別問題読み込み ---
 function loadLevel(genre, level){
-  // 問題配列が空のときだけ Loading を表示
-  if(!questions || questions.length === 0){
-    showScreen('loading');
-  }
+  // Loading画面を表示
+  showScreen('loading');
 
   requestAnimationFrame(() => {
     setTimeout(() => {
@@ -206,7 +221,7 @@ function showQuestion(){
   const isMultiple = q.selectionType === 'multiple';
   const isImage = q.displayType === 'image';
 
-  document.getElementById('questionNumber').textContent = `問題 ${currentQuestion+1} / ${questions.length}`;
+  document.getElementById('questionNumber').textContent = '問題 ' + (currentQuestion+1) + ' / ' + questions.length;
   document.getElementById('questionText').textContent = q.question;
   document.getElementById('feedback').innerHTML = '';
   document.getElementById('multipleInstruction').style.display = isMultiple ? 'block' : 'none';
@@ -217,12 +232,15 @@ function showQuestion(){
   const choicesDiv = document.getElementById('choices');
   let html = '<div class="image-grid">';
   Object.keys(choiceMap).forEach(label => {
-    html += `<button class="btn choice-btn ${isImage?'image-choice':''}" onclick="${isMultiple ? `toggleChoice('${label}')` : `checkAnswer('${label}')`}">
-      ${isImage ? `<img src="${choiceMap[label]}" alt="選択肢${label}" onerror="this.src='https://via.placeholder.com/400x250?text=画像読込エラー'"><div style="margin-top:8px;font-weight:bold;font-size:18px;">${label}</div>` : `${label}: ${choiceMap[label]}` }
-    </button>`;
+    const onclick = isMultiple ? "toggleChoice('" + label + "')" : "checkAnswer('" + label + "')";
+    const buttonClass = 'btn choice-btn' + (isImage ? ' image-choice' : '');
+    const content = isImage
+      ? '<img src="' + choiceMap[label] + '" alt="選択肢' + label + '" onerror="this.src=\'https://via.placeholder.com/400x250?text=画像読込エラー\'"><div style="margin-top:8px;font-weight:bold;font-size:18px;">' + label + '</div>'
+      : label + ': ' + choiceMap[label];
+    html += '<button class="' + buttonClass + '" onclick="' + onclick + '">' + content + '</button>';
   });
   html += '</div>';
-  if(isMultiple) html += `<button id="submitBtn" class="btn submit-btn" onclick="submitMultipleAnswer()">解答する</button>`;
+  if(isMultiple) html += '<button id="submitBtn" class="btn submit-btn" onclick="submitMultipleAnswer()">解答する</button>';
   choicesDiv.innerHTML = html;
 
   showScreen('questionScreen');
@@ -252,9 +270,9 @@ function submitMultipleAnswer(){
   const correct = q.answer.split(',').map(a=>a.trim());
   const isCorrect = selectedChoices.length === correct.length && selectedChoices.every(c=>correct.includes(c));
   const feedbackDiv = document.getElementById('feedback');
-  feedbackDiv.innerHTML = isCorrect ? 
-    `<div class="result correct">✓ 正解！</div><button class="btn" onclick="nextQuestion()">次へ</button>` :
-    `<div class="result incorrect">✗ 不正解！正解は ${correct.join(', ')} です</div><button class="btn" onclick="nextQuestion()">次へ</button>`;
+  feedbackDiv.innerHTML = isCorrect ?
+    '<div class="result correct">✓ 正解！</div><button class="btn" onclick="nextQuestion()">次へ</button>' :
+    '<div class="result incorrect">✗ 不正解！正解は ' + correct.join(', ') + ' です</div><button class="btn" onclick="nextQuestion()">次へ</button>';
   const submitBtn = document.getElementById('submitBtn'); if(submitBtn) submitBtn.style.display='none';
   if(isCorrect) score++;
 }
@@ -265,8 +283,8 @@ function checkAnswer(label){
   answered = true;
   const q = questions[currentQuestion];
   const feedbackDiv = document.getElementById('feedback');
-  if(q.answer.split(',').includes(label)){ score++; feedbackDiv.innerHTML=`<div class="result correct">✓ 正解！</div><button class="btn" onclick="nextQuestion()">次へ</button>`;}
-  else{ feedbackDiv.innerHTML=`<div class="result incorrect">✗ 不正解！正解は ${q.answer} です</div><button class="btn" onclick="nextQuestion()">次へ</button>`;}
+  if(q.answer.split(',').includes(label)){ score++; feedbackDiv.innerHTML='<div class="result correct">✓ 正解！</div><button class="btn" onclick="nextQuestion()">次へ</button>';}
+  else{ feedbackDiv.innerHTML='<div class="result incorrect">✗ 不正解！正解は ' + q.answer + ' です</div><button class="btn" onclick="nextQuestion()">次へ</button>';}
 }
 
 function nextQuestion(){ currentQuestion++; showQuestion(); }
@@ -281,7 +299,7 @@ function showSectionResult(){
   } else {
     // 不合格：不合格画面を表示
     document.getElementById('failResultText').textContent =
-      `${currentGenre} - ${levelName}の結果は ${score} / ${questions.length} 問でした`;
+      currentGenre + ' - ' + levelName + 'の結果は ' + score + ' / ' + questions.length + ' 問でした';
     showScreen('failScreen');
   }
 }
@@ -290,20 +308,20 @@ function showSectionResult(){
 function showCertificate(){
   const levelName = levels[currentLevelIndex];
   const today = new Date();
-  const dateStr = `${today.getFullYear()}年${today.getMonth()+1}月${today.getDate()}日`;
+  const dateStr = today.getFullYear() + '年' + (today.getMonth()+1) + '月' + today.getDate() + '日';
 
   // ジャンル番号を取得（ジャンル1 → 1）
   const genreNumber = currentGenre.replace('ジャンル', '');
   const levelNumber = currentLevelIndex + 1; // 0:初級→1, 1:中級→2, 2:上級→3
 
   // 合格証明書画像URLを設定
-  const imageUrl = `https://nomynoma.github.io/storage/quizsample/imgs/frame_hyousyoujyou_${genreNumber}-${levelNumber}.jpg`;
+  const imageUrl = 'https://nomynoma.github.io/storage/quizsample/imgs/frame_hyousyoujyou_' + genreNumber + '-' + levelNumber + '.jpg';
   document.getElementById('certificateImage').src = imageUrl;
 
   // テキストを設定
-  const levelText = currentLevelIndex === 2 ? '上級全問正解' : `${levelName}合格`;
+  const levelText = currentLevelIndex === 2 ? '上級全問正解' : levelName + '合格';
   document.getElementById('certificateText').textContent =
-    `${nickname}　${currentGenre}　${levelText}　${dateStr}`;
+    nickname + '　' + currentGenre + '　' + levelText + '　' + dateStr;
 
   // ボタンの表示制御
   if(currentLevelIndex < levels.length - 1){
@@ -319,15 +337,31 @@ function showCertificate(){
   showScreen('certificateScreen');
 }
 
+// Xで共有（合格時）
+function shareToX(){
+  const levelName = levels[currentLevelIndex];
+  const levelText = currentLevelIndex === 2 ? '上級全問正解' : levelName + '合格';
+  const text = 'クイズアプリで' + currentGenre + 'の' + levelText + 'しました！君も挑戦してみよう！';
+  const url = 'https://nomynoma.github.io/storage/quizsample/';
+  const twitterUrl = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(text) + '&url=' + encodeURIComponent(url);
+  window.open(twitterUrl, '_blank', 'width=550,height=420');
+}
+
+// Xで共有（失敗時）
+function shareFailToX(){
+  const levelName = levels[currentLevelIndex];
+  const text = 'クイズアプリで' + currentGenre + 'の' + levelName + 'に挑戦したよ！' + score + '/' + questions.length + '問正解！君も挑戦してみよう！';
+  const url = 'https://nomynoma.github.io/storage/quizsample/';
+  const twitterUrl = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(text) + '&url=' + encodeURIComponent(url);
+  window.open(twitterUrl, '_blank', 'width=550,height=420');
+}
+
 // レベルをやり直す
 function retryLevel(){
   loadLevel(currentGenre, levels[currentLevelIndex]);
 }
 
 function nextSection(){
-  // ボタン押したらすぐ Loading を表示して画面切替
-  showScreen('loading');
-
   // ボタン連打防止
   document.getElementById('certificateNextBtn').disabled = true;
 
@@ -341,15 +375,6 @@ function nextSection(){
   });
 }
 
-
-// 最終結果
-function showFinalResult(){
-  const today = new Date();
-  const dateStr = `${today.getFullYear()}年${today.getMonth()+1}月${today.getDate()}日`;
-  document.getElementById('finalResultText').textContent = `${nickname}　${currentGenre}全レベルクリア！　${dateStr}`;
-  showScreen('resultScreen');
-}
-
 function restartQuiz(){
   nickname = '';
   currentGenre = '';
@@ -360,11 +385,13 @@ function restartQuiz(){
   answered = false;
   selectedChoices = [];
   document.getElementById('nicknameInput').value = '';
+
+  // ニックネーム画面の表示状態をリセット
+  document.getElementById('nicknameForm').style.display = 'block';
+  document.getElementById('preparingMessage').style.display = 'none';
+
   showScreen('nicknameScreen');
 }
-
-
-document.getElementById('loading').style.display='none';
 </script>
 </body>
 </html>
