@@ -1,5 +1,5 @@
 function doGet() {
-  return HtmlService.createHtmlOutputFromFile('Index')
+  return HtmlService.createHtmlOutputFromFile('index')
     .setTitle('クイズアプリ')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
@@ -12,7 +12,10 @@ function doGet() {
  */
 function getQuestions(genreName, level) {
   try {
-    var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(genreName);
+    Logger.log('開始: genreName=' + genreName + ', level=' + level);
+    var SPREADSHEET_ID = '1Xycd1Wtq0ZNiQyhEIscRKndbyEeYt0H26wih9OXDJr8';
+    var sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(genreName);
+    Logger.log('シート取得: ' + (sheet ? '成功' : '失敗'));
     if (!sheet) throw new Error(genreName + 'シートが見つかりません');
 
     var data = sheet.getDataRange().getValues();
