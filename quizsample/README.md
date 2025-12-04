@@ -3,7 +3,7 @@
 Claudeに基本を作ってもらって、ChatGPTに仕様をこねてもらったやつ
 自分では何もコードを書いてない
 
-## 問題のスプシ
+## クイズの問題と選択肢、解答を保持してるスプシ
 https://docs.google.com/spreadsheets/d/1Xycd1Wtq0ZNiQyhEIscRKndbyEeYt0H26wih9OXDJr8/edit?usp=sharing
 
 
