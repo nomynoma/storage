@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<base target="_top">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>合格証</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🏆</text></svg>">
+<style>
+body {
+  font-family: 'Segoe UI', sans-serif;
+  margin: 0;
+  padding: 20px;
+  background: #f0f2f5;
+  min-height: 100vh;
+  box-sizing: border-box;
+  text-align: center;
+}
+.container {
+  background: white;
+  border-radius: 15px;
+  padding: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  max-width: 100%;
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+@media (min-width: 768px) {
+  .container {
+    padding: 40px;
+    max-width: 800px;
+  }
+}
+h1 {
+  color: #333;
+  margin-bottom: 30px;
+  font-size: 26px;
+}
+.certificate-image {
+  max-width: 100%;
+  height: auto;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  margin-bottom: 30px;
+}
+.btn {
+  background: #667eea;
+  color: white;
+  border: none;
+  padding: 15px 30px;
+  font-size: 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: inline-block;
+  margin: 10px;
+  text-decoration: none;
+}
+.btn:hover {
+  background: #5568d3;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(102,126,234,0.4);
+}
+.info {
+  margin: 20px 0;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  color: #666;
+}
+.loading {
+  text-align: center;
+  padding: 40px;
+  font-size: 18px;
+  color: #666;
+}
+.error {
+  color: #d32f2f;
+  padding: 20px;
+  background: #ffebee;
+  border-radius: 8px;
+  margin: 20px 0;
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>🏆 合格証</h1>
+  <div id="debugInfo" style="background:#fff3cd; padding:10px; margin-bottom:20px; border-radius:8px; font-size:12px; display:none;">
+    <strong>デバッグ情報:</strong><br>
+    UUID: <span id="debugUuid"></span>
+  </div>
+  <div id="content">
+    <div class="loading">読み込み中...</div>
+  </div>
+</div>
+
+<script>
+// UUIDを取得（Apps Script テンプレート構文）
+var uuid = '<?!= uuid ?>';
+var certificateData = null; // グローバルに保持
+var isLoading = false; // リクエスト実行中フラグ
+var isLoaded = false; // データ取得完了フラグ
+
+console.log('UUIDパラメータ:', uuid);
+
+// 合格証データを取得して表示（1回のみ実行）
+if (uuid && uuid !== '' && !isLoading && !isLoaded) {
+  isLoading = true;
+  google.script.run
+    .withSuccessHandler(displayCertificate)
+    .withFailureHandler(displayError)
+    .getCertificateByUUID(uuid);
+} else if (!uuid || uuid === '') {
+  displayError({ message: 'UUIDが指定されていません' });
+}
+
+function displayCertificate(data) {
+  console.log('合格証データ取得成功:', data);
+  isLoading = false;
+  isLoaded = true;
+
+  // データがnullまたは未定義の場合のエラー処理
+  if (!data || !data.imageData) {
+    displayError({ message: 'データが見つかりませんでした。合格証がまだ保存されていない可能性があります。' });
+    return;
+  }
+
+  // グローバル変数に保存（ダウンロード時に使用）
+  certificateData = data;
+
+  var html = '';
+  html += '<img src="' + data.imageData + '" class="certificate-image" id="certificateImg">';
+  html += '<div style="margin-top:20px;">';
+  html += '<button class="btn" onclick="downloadImage()">画像をダウンロード</button>';
+  html += '</div>';
+
+  document.getElementById('content').innerHTML = html;
+}
+
+function displayError(error) {
+  console.error('合格証取得エラー:', error);
+  isLoading = false;
+  isLoaded = true; // エラー時もフラグを立てて再試行を防ぐ
+
+  var html = '<div class="error">';
+  html += '<strong>⚠️ エラー</strong><br>';
+  html += (error.message || 'エラーが発生しました');
+  html += '</div>';
+  html += '<p>合格証が見つかりませんでした。</p>';
+  html += '<p style="font-size:14px; color:#666; margin-top:20px;">考えられる原因:</p>';
+  html += '<ul style="text-align:left; color:#666; font-size:13px;">';
+  html += '<li>合格証がまだ生成されていない</li>';
+  html += '<li>URLが正しくない</li>';
+  html += '<li>データの保存に失敗した</li>';
+  html += '</ul>';
+  html += '<p style="font-size:12px; color:#999; margin-top:20px;">UUID: ' + uuid + '</p>';
+
+  document.getElementById('content').innerHTML = html;
+
+  // エラー後は再試行しない
+  return;
+}
+
+function downloadImage() {
+  if (!certificateData) {
+    alert('合格証データが読み込まれていません');
+    return;
+  }
+
+  var img = document.getElementById('certificateImg');
+  var link = document.createElement('a');
+  link.href = img.src;
+
+  // ファイル名を生成: ニックネーム_ジャンル_レベル_日付.jpg
+  var nickname = certificateData.nickname || 'unknown';
+  var genre = certificateData.genre || 'unknown';
+  var level = certificateData.level || 'unknown';
+
+  // 日付から年月日を抽出（例: "Fri Dec 05 2025..." -> "20251205"）
+  var dateStr = '';
+  try {
+    var date = new Date(certificateData.date);
+    var year = date.getFullYear();
+    var month = ('0' + (date.getMonth() + 1)).slice(-2);
+    var day = ('0' + date.getDate()).slice(-2);
+    dateStr = year + month + day;
+  } catch (e) {
+    dateStr = 'date';
+  }
+
+  // ファイル名に使えない文字を除去
+  var safeNickname = nickname.replace(/[\\/:*?"<>|]/g, '_');
+  var safeGenre = genre.replace(/[\\/:*?"<>|]/g, '_');
+  var safeLevel = level.replace(/[\\/:*?"<>|]/g, '_');
+
+  link.download = '合格証_' + safeNickname + '_' + safeGenre + '_' + safeLevel + '_' + dateStr + '.jpg';
+
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+</script>
+</body>
+</html>

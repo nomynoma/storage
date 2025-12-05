@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<base target="_top">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>クイズアプリ</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>📝</text></svg>">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+body { font-family: 'Segoe UI', sans-serif; margin:0; padding:20px; background:#f0f2f5; min-height:100vh; box-sizing:border-box;}
+.container { background:white; border-radius:15px; padding:40px; box-shadow:0 10px 30px rgba(0,0,0,0.2); width:90%; max-width:400px; margin:0 auto; box-sizing:border-box; text-align:center;}
+h1 { color:#333; margin-bottom:30px; font-size:26px;}
+.screen { display:none; }
+.screen.active { display:block; }
+.btn { background:#667eea; color:white; border:none; padding:15px 30px; font-size:18px; border-radius:8px; cursor:pointer; transition:all 0.3s; display:block; margin:20px auto; min-width:200px; box-sizing:border-box;}
+.btn:hover { background:#5568d3; transform:translateY(-2px); box-shadow:0 5px 15px rgba(102,126,234,0.4);}
+.choice-btn { width:100%; margin:10px 0; text-align:left; background:#f8f9fa; color:#333; padding:15px 20px; position:relative; border-radius:8px; cursor:pointer; box-sizing:border-box;}
+.choice-btn:hover { background:#e9ecef; transform:translateY(-1px);}
+.choice-btn.selected { background:#d4e7ff; border:2px solid #667eea; }
+.choice-btn.image-choice { padding:10px; text-align:center; height:auto; }
+.choice-btn.image-choice img { width:100%; max-width:400px; height:250px; object-fit:cover; border-radius:8px; display:block; margin:0 auto;}
+.image-grid { display:grid; grid-template-columns:1fr; gap:15px; margin-bottom:20px;}
+.question-number { color:#667eea; font-size:16px; font-weight:bold; margin-bottom:10px; }
+.question-text { font-size:22px; color:#333; margin-bottom:30px; line-height:1.6; text-align:center;}
+.question-text img { max-height:100px !important; width:auto !important; display:inline-block; vertical-align:middle; }
+.result { font-size:20px; padding:20px; border-radius:8px; margin:20px 0; text-align:center; font-weight:bold;}
+.result.correct { background:#d4edda; color:#155724; border:2px solid #c3e6cb;}
+.result.incorrect { background:#f8d7da; color:#721c24; border:2px solid #f5c6cb;}
+.score { font-size:48px; color:#667eea; text-align:center; margin:30px 0; font-weight:bold;}
+.score-text { font-size:24px; color:#666; text-align:center; margin-bottom:30px;}
+.loading { text-align:center; padding:40px; font-size:18px; color:#666;}
+.submit-btn { background:#28a745; margin-top:20px;}
+.submit-btn:hover { background:#218838; }
+.multiple-instruction { background:#ffe6e6; border:2px solid #ff6b6b; padding:12px 20px; border-radius:8px; margin-bottom:20px; color:#c92a2a; font-size:16px; font-weight:bold; text-align:center;}
+.certificate-area { margin-bottom:30px; }
+.button-area { text-align:center; }
+.result-background { position:relative; width:100%; max-width:500px; margin:0 auto; }
+.result-bg-image { width:100%; height:auto; display:block; border-radius:15px; }
+.result-overlay { position:absolute; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; }
+.certificate-text { font-size:14px; font-weight:bold; color:#333; text-shadow: 2px 2px 4px rgba(255,255,255,0.9), -2px -2px 4px rgba(255,255,255,0.9), 2px -2px 4px rgba(255,255,255,0.9), -2px 2px 4px rgba(255,255,255,0.9); letter-spacing:8px; line-height:1.8; }
+@media (max-width:600px) {
+  body { padding:10px; min-height:auto;}
+  h1 { font-size:22px;}
+  .question-text { font-size:18px; margin-bottom:20px;}
+  .container { padding:20px;}
+  .btn { padding:12px 20px; font-size:16px; min-width:100%;}
+  .score { font-size:36px;}
+  .score-text { font-size:18px;}
+  .result { font-size:16px; padding:15px;}
+  .image-grid { grid-template-columns:1fr; gap:10px;}
+  .choice-btn.image-choice img { height:auto; max-height:300px;}
+  .choice-btn.image-choice { padding:5px;}
+  .certificate-text { font-size:24px; letter-spacing:6px; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- ニックネーム入力画面 -->
+  <div id="nicknameScreen" class="screen active">
+    <div id="nicknameForm">
+      <h1>📝 ニックネーム入力</h1>
+      <p style="font-size:18px; color:#666; margin-bottom:30px;">
+        合格証明書に表示するニックネームを入力してください
+      </p>
+      <input type="text" id="nicknameInput" placeholder="ニックネームを入力" style="width:100%; max-width:300px; padding:15px; font-size:18px; border:2px solid #667eea; border-radius:8px; margin-bottom:20px; box-sizing:border-box; text-align:center;">
+      <button class="btn" onclick="submitNickname()">次へ</button>
+    </div>
+    <div id="preparingMessage" style="display:none;">
+      <h1>⏳ 問題作成中...</h1>
+      <p style="font-size:18px; color:#666; margin-top:30px;">
+        しばらくお待ちください
+      </p>
+    </div>
+  </div>
+
+  <!-- ジャンル選択画面 -->
+  <div id="genreScreen" class="screen">
+    <h1>📚 ジャンル選択</h1>
+    <p style="font-size:18px; color:#666; margin-bottom:30px;">
+      挑戦したいジャンルを選んでください
+    </p>
+    <button class="btn" onclick="selectGenre('ジャンル1')">ジャンル1</button>
+    <button class="btn" onclick="selectGenre('ジャンル2')">ジャンル2</button>
+    <button class="btn" onclick="selectGenre('ジャンル3')">ジャンル3</button>
+    <button class="btn" onclick="selectGenre('ジャンル4')">ジャンル4</button>
+    <button class="btn" onclick="selectGenre('ジャンル5')">ジャンル5</button>
+    <button class="btn" onclick="selectGenre('ジャンル6')">ジャンル6</button>
+  </div>
+
+  <!-- 問題画面 -->
+  <div id="questionScreen" class="screen">
+    <div class="question-number" id="questionNumber"></div>
+    <div id="multipleInstruction" class="multiple-instruction" style="display:none;">
+      🔴 複数選択問題：正解と思うものをすべて選んでから「解答する」ボタンを押してください
+    </div>
+    <div class="question-text" id="questionText"></div>
+    <div id="choices"></div>
+    <div id="feedback"></div>
+  </div>
+
+  <!-- 不合格画面 -->
+  <div id="failScreen" class="screen">
+    <h1>😢 不合格</h1>
+    <div class="score-text" id="failResultText"></div>
+    <p style="font-size:18px; color:#666; margin:20px 0;">10問全問正解で次のレベルへ進めます</p>
+    <button class="btn" style="background:#1DA1F2;" onclick="shareFailToX()">𝕏 で共有する</button>
+    <button class="btn" onclick="retryLevel()">もう一度挑戦する</button>
+    <button class="btn" onclick="restartQuiz()" style="background:#999;">最初から解く</button>
+  </div>
+
+  <!-- 合格証明書画面 -->
+  <div id="certificateScreen" class="screen">
+    <!-- 合格証明書エリア（スクリーンショット用） -->
+    <div id="certificateArea" class="certificate-area">
+      <div class="result-background">
+        <img id="certificateImage" src="" alt="合格証明書" class="result-bg-image">
+        <div class="result-overlay">
+          <div class="certificate-text" id="certificateText"></div>
+        </div>
+      </div>
+    </div>
+    <!-- ボタンエリア -->
+    <div class="button-area">
+      <button class="btn" style="background:#1DA1F2;" onclick="shareToX()">𝕏 で共有する</button>
+      <button class="btn" id="certificateNextBtn" onclick="nextSection()">次のレベルへ</button>
+      <button class="btn" id="certificateRestartBtn" onclick="restartQuiz()">最初からときなおす</button>
+      <!-- 合格証URL -->
+      <div id="certificateUrlArea" style="margin-top:20px; padding:15px; background:#f8f9fa; border-radius:8px; display:none;">
+        <p id="certificateUrlLabel" style="font-size:14px; color:#666; margin:0 0 10px 0;">⏳ 合格証URL準備中…</p>
+        <a id="certificateUrl" href="#" target="_blank" style="font-size:12px; color:#667eea; word-break:break-all; display:none; margin-bottom:10px;"></a>
+        <button class="btn" id="certificateUrlCopyBtn" onclick="copyCertificateUrl()" style="background:#28a745; padding:10px 20px; font-size:14px; min-width:auto; display:none;">URLをコピー</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ローディング画面 -->
+  <div id="loading" class="screen">
+    <div class="loading">問題を読み込んでいます...</div>
+  </div>
+
+</div>
+
+<script>
+let nickname = '';
+let levels = ['初級','中級','上級'];
+let currentGenre = '';
+let currentLevelIndex = 0;
+let questions = [];
+let currentQuestion = 0;
+let score = 0;
+let answered = false;
+let selectedChoices = [];
+
+// 画面切替
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const el = document.getElementById(id);
+  if(el) el.classList.add('active');
+}
+
+// ニックネーム送信
+function submitNickname(){
+  const input = document.getElementById('nicknameInput').value.trim();
+  if(input === ''){
+    alert('ニックネームを入力してください');
+    return;
+  }
+  if(input.length > 10){
+    alert('ニックネームは10文字以内で入力してください');
+    return;
+  }
+  nickname = input;
+
+  // フォームを非表示にして「問題作成中」メッセージを表示
+  document.getElementById('nicknameForm').style.display = 'none';
+  document.getElementById('preparingMessage').style.display = 'block';
+
+  // 少し待ってからジャンル選択画面へ
+  setTimeout(() => {
+    document.getElementById('nicknameForm').style.display = 'block';
+    document.getElementById('preparingMessage').style.display = 'none';
+    showScreen('genreScreen');
+  }, 300);
+}
+
+// ジャンル選択
+function selectGenre(genre){
+  currentGenre = genre;
+  currentLevelIndex = 0;
+  loadLevel(currentGenre, levels[currentLevelIndex]);
+}
+
+// --- レベル別問題読み込み ---
+function loadLevel(genre, level){
+  // Loading画面を表示
+  showScreen('loading');
+
+  requestAnimationFrame(() => {
+    setTimeout(() => {
+      google.script.run
+        .withSuccessHandler(function(data){
+          questions = data;
+          currentQuestion = 0;
+          score = 0;
+          showQuestion();
+        })
+        .withFailureHandler(function(err){
+          alert('問題の読み込みに失敗しました: '+err);
+          showScreen('genreScreen');
+        })
+        .getQuestions(genre, level);
+    }, 50);
+  });
+}
+
+
+// 問題表示
+function showQuestion(){
+  if(currentQuestion >= questions.length){
+    showSectionResult();
+    return;
+  }
+
+  answered = false;
+  selectedChoices = [];
+  const q = questions[currentQuestion];
+  const isMultiple = q.selectionType === 'multiple';
+  const isInput = q.selectionType === 'input';
+  const isImage = q.displayType === 'image';
+
+  document.getElementById('questionNumber').textContent = '問題 ' + (currentQuestion+1) + ' / ' + questions.length;
+  document.getElementById('questionText').innerHTML = q.question;
+  document.getElementById('feedback').innerHTML = '';
+  document.getElementById('multipleInstruction').style.display = isMultiple ? 'block' : 'none';
+
+  const choicesDiv = document.getElementById('choices');
+
+  // 入力問題の場合
+  if(isInput){
+    let html = '<input type="text" id="inputAnswer" placeholder="答えを入力してください" style="width:100%; max-width:300px; padding:15px; font-size:18px; border:2px solid #667eea; border-radius:8px; margin-bottom:20px; box-sizing:border-box; text-align:center;">';
+    html += '<button id="submitBtn" class="btn submit-btn" onclick="submitInputAnswer()">解答する</button>';
+    choicesDiv.innerHTML = html;
+  } else {
+    // 選択問題の場合（既存のコード）
+    const choiceMap = { A: q.choiceA, B: q.choiceB, C: q.choiceC, D: q.choiceD };
+    let html = '<div class="image-grid">';
+    Object.keys(choiceMap).forEach(label => {
+      const onclick = isMultiple ? "toggleChoice('" + label + "')" : "checkAnswer('" + label + "')";
+      const buttonClass = 'btn choice-btn' + (isImage ? ' image-choice' : '');
+      const content = isImage
+        ? '<img src="' + choiceMap[label] + '" alt="選択肢' + label + '" onerror="this.src=\'https://via.placeholder.com/400x250?text=画像読込エラー\'"><div style="margin-top:8px;font-weight:bold;font-size:18px;">' + label + '</div>'
+        : label + ': ' + choiceMap[label];
+      html += '<button class="' + buttonClass + '" onclick="' + onclick + '">' + content + '</button>';
+    });
+    html += '</div>';
+    if(isMultiple) html += '<button id="submitBtn" class="btn submit-btn" onclick="submitMultipleAnswer()">解答する</button>';
+    choicesDiv.innerHTML = html;
+  }
+
+  showScreen('questionScreen');
+}
+
+// 複数選択
+function toggleChoice(choice){
+  if(answered) return;
+  const idx = selectedChoices.indexOf(choice);
+  if(idx>-1) selectedChoices.splice(idx,1); else selectedChoices.push(choice);
+  updateChoiceButtons();
+}
+
+function updateChoiceButtons(){
+  const buttons = document.querySelectorAll('.choice-btn:not(.submit-btn)');
+  const labels = ['A','B','C','D'];
+  buttons.forEach((btn,i)=>{
+    btn.classList.toggle('selected', selectedChoices.includes(labels[i]));
+  });
+}
+
+function submitMultipleAnswer(){
+  if(answered) return;
+  if(selectedChoices.length===0){ alert('少なくとも1つ選択してください'); return;}
+  answered = true;
+  const q = questions[currentQuestion];
+  const correct = q.answer.split(',').map(a=>a.trim());
+  const isCorrect = selectedChoices.length === correct.length && selectedChoices.every(c=>correct.includes(c));
+  const feedbackDiv = document.getElementById('feedback');
+  feedbackDiv.innerHTML = isCorrect ?
+    '<div class="result correct">✓ 正解！</div><button class="btn" onclick="nextQuestion()">次へ</button>' :
+    '<div class="result incorrect">✗ 不正解！正解は ' + correct.join(', ') + ' です</div><button class="btn" onclick="nextQuestion()">次へ</button>';
+  const submitBtn = document.getElementById('submitBtn'); if(submitBtn) submitBtn.style.display='none';
+  if(isCorrect) score++;
+}
+
+// 単一選択
+function checkAnswer(label){
+  if(answered) return;
+  answered = true;
+  const q = questions[currentQuestion];
+  const feedbackDiv = document.getElementById('feedback');
+  if(q.answer.split(',').includes(label)){ score++; feedbackDiv.innerHTML='<div class="result correct">✓ 正解！</div><button class="btn" onclick="nextQuestion()">次へ</button>';}
+  else{ feedbackDiv.innerHTML='<div class="result incorrect">✗ 不正解！正解は ' + q.answer + ' です</div><button class="btn" onclick="nextQuestion()">次へ</button>';}
+}
+
+// 入力問題
+function submitInputAnswer(){
+  if(answered) return;
+  const input = document.getElementById('inputAnswer').value.trim();
+  if(input === ''){ alert('答えを入力してください'); return;}
+  answered = true;
+  const q = questions[currentQuestion];
+  const feedbackDiv = document.getElementById('feedback');
+  const isCorrect = input === q.answer;
+  feedbackDiv.innerHTML = isCorrect ?
+    '<div class="result correct">✓ 正解！</div><button class="btn" onclick="nextQuestion()">次へ</button>' :
+    '<div class="result incorrect">✗ 不正解！正解は ' + q.answer + ' です</div><button class="btn" onclick="nextQuestion()">次へ</button>';
+  const submitBtn = document.getElementById('submitBtn'); if(submitBtn) submitBtn.style.display='none';
+  if(isCorrect) score++;
+}
+
+function nextQuestion(){ currentQuestion++; showQuestion(); }
+
+// レベル結果
+function showSectionResult(){
+  const levelName = levels[currentLevelIndex];
+
+  if(score === questions.length){
+    // 合格：合格証明書を表示
+    showCertificate();
+  } else {
+    // 不合格：不合格画面を表示
+    document.getElementById('failResultText').textContent =
+      currentGenre + ' - ' + levelName + 'の結果は ' + score + ' / ' + questions.length + ' 問でした';
+    showScreen('failScreen');
+  }
+}
+
+// 合格証明書を表示
+function showCertificate(){
+  const levelName = levels[currentLevelIndex];
+  const today = new Date();
+  const dateStr = today.getFullYear() + '年' + (today.getMonth()+1) + '月' + today.getDate() + '日';
+
+  // ジャンル番号を取得（ジャンル1 → 1）
+  const genreNumber = currentGenre.replace('ジャンル', '');
+  const levelNumber = currentLevelIndex + 1; // 0:初級→1, 1:中級→2, 2:上級→3
+
+  // 合格証明書画像URLを設定
+  const imageUrl = 'https://nomynoma.github.io/storage/quizsample/imgs/frame_hyousyoujyou_' + genreNumber + '-' + levelNumber + '.jpg';
+  document.getElementById('certificateImage').src = imageUrl;
+
+  // テキストを設定
+  const levelText = currentLevelIndex === 2 ? '上級全問正解' : levelName + '合格';
+  document.getElementById('certificateText').innerHTML =
+    '<h3>検定クイズ</h3>' + currentGenre + ' ' + levelText + '<BR/>' + nickname + '殿<br/><span style="font-size: 12px;">' + dateStr + '</span>';
+
+  // ボタンの表示制御
+  if(currentLevelIndex < levels.length - 1){
+    // 初級・中級：次のレベルへ進むボタンを表示
+    document.getElementById('certificateNextBtn').style.display = 'block';
+    document.getElementById('certificateRestartBtn').style.display = 'none';
+  } else {
+    // 上級：最初からときなおすボタンのみ表示
+    document.getElementById('certificateNextBtn').style.display = 'none';
+    document.getElementById('certificateRestartBtn').style.display = 'block';
+  }
+
+  showScreen('certificateScreen');
+
+  // 合格証画像を生成して保存
+  setTimeout(() => {
+    saveCertificateImage(levelName, dateStr);
+  }, 500);
+}
+
+// Xで共有（合格時）
+function shareToX(){
+  const levelName = levels[currentLevelIndex];
+  const levelText = currentLevelIndex === 2 ? '上級全問正解' : levelName + '合格';
+  const text = 'クイズアプリで' + currentGenre + 'の' + levelText + 'しました！君も挑戦してみよう！';
+  const url = 'https://nomynoma.github.io/storage/quizsample/';
+  const twitterUrl = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(text) + '&url=' + encodeURIComponent(url);
+  window.open(twitterUrl, '_blank', 'width=550,height=420');
+}
+
+// Xで共有（失敗時）
+function shareFailToX(){
+  const levelName = levels[currentLevelIndex];
+  const text = 'クイズアプリで' + currentGenre + 'の' + levelName + 'に挑戦したよ！' + score + '/' + questions.length + '問正解！君も挑戦してみよう！';
+  const url = 'https://nomynoma.github.io/storage/quizsample/';
+  const twitterUrl = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(text) + '&url=' + encodeURIComponent(url);
+  window.open(twitterUrl, '_blank', 'width=550,height=420');
+}
+
+// 合格証画像を生成してスプレッドシートに保存
+function saveCertificateImage(levelName, dateStr){
+  // 合格証URL準備中を表示
+  document.getElementById('certificateUrlArea').style.display = 'block';
+  document.getElementById('certificateUrlLabel').textContent = '⏳ 合格証URL準備中…';
+  document.getElementById('certificateUrl').style.display = 'none';
+  document.getElementById('certificateUrlCopyBtn').style.display = 'none';
+
+  const certificateArea = document.getElementById('certificateArea');
+
+  html2canvas(certificateArea, {
+    useCORS: true,
+    allowTaint: true,
+    backgroundColor: '#ffffff'
+  }).then(canvas => {
+    // canvasをBase64形式に変換（JPEG形式で圧縮して軽量化）
+    const imageDataBase64 = canvas.toDataURL('image/jpeg', 0.8);
+
+    // スプレッドシートに保存（サーバー側でハッシュ生成）
+    google.script.run
+      .withSuccessHandler(function(result){
+        console.log('合格証画像を保存しました。UUID: ' + result.uuid);
+        // 合格証URLを表示（サーバーから返されたUUIDを使用）
+        displayCertificateUrl(result.uuid);
+      })
+      .withFailureHandler(function(error){
+        console.error('画像保存エラー:', error);
+      })
+      .saveCertificateData({
+        genre: currentGenre,
+        level: levelName,
+        nickname: nickname,
+        date: dateStr,
+        imageData: imageDataBase64
+      });
+  }).catch(error => {
+    console.error('html2canvasエラー:', error);
+  });
+}
+
+// 合格証URLを表示
+function displayCertificateUrl(hash){
+  // GitHub PagesのURL
+  const GITHUB_PAGES_URL = 'https://nomynoma.github.io/storage/quizsample/certificate/';
+  const certificateUrl = GITHUB_PAGES_URL + '?g=' + hash;
+
+  // ラベルを更新
+  document.getElementById('certificateUrlLabel').textContent = '🔗 合格証URL（別窓で開けます）';
+
+  // URLとボタンを表示
+  document.getElementById('certificateUrl').href = certificateUrl;
+  document.getElementById('certificateUrl').textContent = certificateUrl;
+  document.getElementById('certificateUrl').style.display = 'block';
+  document.getElementById('certificateUrlCopyBtn').style.display = 'inline-block';
+  document.getElementById('certificateUrlArea').style.display = 'block';
+
+  // グローバル変数に保存（コピー用）
+  window.currentCertificateUrl = certificateUrl;
+}
+
+// 合格証URLをコピー
+function copyCertificateUrl(){
+  if(window.currentCertificateUrl){
+    navigator.clipboard.writeText(window.currentCertificateUrl).then(() => {
+      alert('URLをコピーしました！');
+    }).catch(err => {
+      console.error('コピー失敗:', err);
+      // フォールバック：テキストエリアを使う方法
+      const textarea = document.createElement('textarea');
+      textarea.value = window.currentCertificateUrl;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      alert('URLをコピーしました！');
+    });
+  }
+}
+
+// レベルをやり直す
+function retryLevel(){
+  loadLevel(currentGenre, levels[currentLevelIndex]);
+}
+
+function nextSection(){
+  // ボタン連打防止
+  document.getElementById('certificateNextBtn').disabled = true;
+
+  // ブラウザが Loading を描画してから処理を開始
+  requestAnimationFrame(() => {
+    currentLevelIndex++;
+    if(currentLevelIndex < levels.length){
+      document.getElementById('certificateNextBtn').disabled = false;
+      loadLevel(currentGenre, levels[currentLevelIndex]);
+    }
+  });
+}
+
+function restartQuiz(){
+  nickname = '';
+  currentGenre = '';
+  currentLevelIndex = 0;
+  questions = [];
+  currentQuestion = 0;
+  score = 0;
+  answered = false;
+  selectedChoices = [];
+  document.getElementById('nicknameInput').value = '';
+
+  // ニックネーム画面の表示状態をリセット
+  document.getElementById('nicknameForm').style.display = 'block';
+  document.getElementById('preparingMessage').style.display = 'none';
+
+  showScreen('nicknameScreen');
+}
+</script>
+</body>
+</html>
