@@ -10,11 +10,16 @@
 body {
   font-family: 'Segoe UI', sans-serif;
   margin: 0;
-  padding: 20px;
+  padding: 10px;
   background: #f0f2f5;
   min-height: 100vh;
   box-sizing: border-box;
   text-align: center;
+}
+@media (min-width: 768px) {
+  body {
+    padding: 20px;
+  }
 }
 .container {
   background: white;
@@ -28,8 +33,9 @@ body {
 }
 @media (min-width: 768px) {
   .container {
-    padding: 40px;
-    max-width: 800px;
+    padding: 50px;
+    max-width: none;
+    width: 95%;
   }
 }
 h1 {
@@ -38,7 +44,8 @@ h1 {
   font-size: 26px;
 }
 .certificate-image {
-  max-width: 100%;
+  width: 100%;
+  max-width: 1000px;
   height: auto;
   border-radius: 10px;
   box-shadow: 0 5px 15px rgba(0,0,0,0.1);

@@ -25,7 +25,11 @@ function getQuestions(genreName, level) {
     var startTime = new Date().getTime();
     Logger.log('開始: genreName=' + genreName + ', level=' + level);
 
-    var SPREADSHEET_ID = '1Xycd1Wtq0ZNiQyhEIscRKndbyEeYt0H26wih9OXDJr8';
+    // スプレッドシート取得（デフォルト: このスクリプトが紐付いているスプレッドシート）
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    // カスタム: 別のスプレッドシートを使う場合は下記のコメントを外してIDを指定
+    // var SPREADSHEET_ID = '1Xycd1Wtq0ZNiQyhEIscRKndbyEeYt0H26wih9OXDJr8';
+    // var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
 
     // キャッシュから取得を試みる（6時間有効）
     var cache = CacheService.getScriptCache();
@@ -40,7 +44,7 @@ function getQuestions(genreName, level) {
       Logger.log('キャッシュ読み込み完了: ' + (cacheTime - startTime) + 'ms');
     } else {
       Logger.log('キャッシュミス: スプレッドシートから読み込み');
-      var sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(genreName);
+      var sheet = ss.getSheetByName(genreName);
       var sheetTime = new Date().getTime();
       Logger.log('シート取得完了: ' + (sheetTime - startTime) + 'ms');
       if (!sheet) throw new Error(genreName + 'シートが見つかりません');
@@ -338,10 +342,13 @@ function getDeploymentUrl() {
 function reloadQuestionCache() {
   var startTime = new Date().getTime();
   var cache = CacheService.getScriptCache();
-  var SPREADSHEET_ID = '1Xycd1Wtq0ZNiQyhEIscRKndbyEeYt0H26wih9OXDJr8';
   var genres = ['ジャンル1', 'ジャンル2', 'ジャンル3', 'ジャンル4', 'ジャンル5', 'ジャンル6'];
 
-  var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  // スプレッドシート取得（デフォルト: このスクリプトが紐付いているスプレッドシート）
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  // カスタム: 別のスプレッドシートを使う場合は下記のコメントを外してIDを指定
+  // var SPREADSHEET_ID = '1Xycd1Wtq0ZNiQyhEIscRKndbyEeYt0H26wih9OXDJr8';
+  // var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
 
   // 進捗通知
   SpreadsheetApp.getActiveSpreadsheet().toast(

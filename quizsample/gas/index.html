@@ -5,6 +5,8 @@
 <base target="_top">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>クイズアプリ</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>📝</text></svg>">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
 body { font-family: 'Segoe UI', sans-serif; margin:0; padding:20px; background:#f0f2f5; min-height:100vh; box-sizing:border-box;}
 .container { background:white; border-radius:15px; padding:40px; box-shadow:0 10px 30px rgba(0,0,0,0.2); width:90%; max-width:400px; margin:0 auto; box-sizing:border-box; text-align:center;}
@@ -21,6 +23,7 @@ h1 { color:#333; margin-bottom:30px; font-size:26px;}
 .image-grid { display:grid; grid-template-columns:1fr; gap:15px; margin-bottom:20px;}
 .question-number { color:#667eea; font-size:16px; font-weight:bold; margin-bottom:10px; }
 .question-text { font-size:22px; color:#333; margin-bottom:30px; line-height:1.6; text-align:center;}
+.question-text img { max-height:100px !important; width:auto !important; display:inline-block; vertical-align:middle; }
 .result { font-size:20px; padding:20px; border-radius:8px; margin:20px 0; text-align:center; font-weight:bold;}
 .result.correct { background:#d4edda; color:#155724; border:2px solid #c3e6cb;}
 .result.incorrect { background:#f8d7da; color:#721c24; border:2px solid #f5c6cb;}
@@ -36,6 +39,9 @@ h1 { color:#333; margin-bottom:30px; font-size:26px;}
 .result-bg-image { width:100%; height:auto; display:block; border-radius:15px; }
 .result-overlay { position:absolute; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; }
 .certificate-text { font-size:14px; font-weight:bold; color:#333; text-shadow: 2px 2px 4px rgba(255,255,255,0.9), -2px -2px 4px rgba(255,255,255,0.9), 2px -2px 4px rgba(255,255,255,0.9), -2px 2px 4px rgba(255,255,255,0.9); letter-spacing:8px; line-height:1.8; }
+@media (min-width:600px) {
+  .container { max-width:600px; padding:50px;}
+}
 @media (max-width:600px) {
   body { padding:10px; min-height:auto;}
   h1 { font-size:22px;}
@@ -50,6 +56,10 @@ h1 { color:#333; margin-bottom:30px; font-size:26px;}
   .choice-btn.image-choice { padding:5px;}
   .certificate-text { font-size:24px; letter-spacing:6px; }
 }
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
 </style>
 </head>
 <body>
@@ -62,7 +72,8 @@ h1 { color:#333; margin-bottom:30px; font-size:26px;}
       <p style="font-size:18px; color:#666; margin-bottom:30px;">
         合格証明書に表示するニックネームを入力してください
       </p>
-      <input type="text" id="nicknameInput" placeholder="ニックネームを入力" style="width:100%; max-width:300px; padding:15px; font-size:18px; border:2px solid #667eea; border-radius:8px; margin-bottom:20px; box-sizing:border-box; text-align:center;">
+      <input type="text" id="nicknameInput" maxlength="10" placeholder="ニックネームを入力" style="width:100%; max-width:300px; padding:15px; font-size:18px; border:2px solid #667eea; border-radius:8px; margin-bottom:10px; box-sizing:border-box; text-align:center;">
+      <div id="nicknameError" style="color:#dc3545; font-size:14px; margin-bottom:15px; min-height:20px; display:none;"></div>
       <button class="btn" onclick="submitNickname()">次へ</button>
     </div>
     <div id="preparingMessage" style="display:none;">
@@ -110,20 +121,21 @@ h1 { color:#333; margin-bottom:30px; font-size:26px;}
 
   <!-- 合格証明書画面 -->
   <div id="certificateScreen" class="screen">
-    <!-- 合格証明書エリア（スクリーンショット用） -->
+    <!-- 合格証明書エリア（生成した画像を表示） -->
     <div id="certificateArea" class="certificate-area">
-      <div class="result-background">
-        <img id="certificateImage" src="" alt="合格証明書" class="result-bg-image">
-        <div class="result-overlay">
-          <div class="certificate-text" id="certificateText"></div>
-        </div>
-      </div>
+      <img id="certificateDisplayImage" src="" alt="合格証明書" style="width:100%; max-width:800px; height:auto; display:block; margin:0 auto; border-radius:15px; box-shadow:0 10px 30px rgba(0,0,0,0.2);">
     </div>
     <!-- ボタンエリア -->
     <div class="button-area">
       <button class="btn" style="background:#1DA1F2;" onclick="shareToX()">𝕏 で共有する</button>
       <button class="btn" id="certificateNextBtn" onclick="nextSection()">次のレベルへ</button>
       <button class="btn" id="certificateRestartBtn" onclick="restartQuiz()">最初からときなおす</button>
+      <!-- 合格証URL -->
+      <div id="certificateUrlArea" style="margin-top:20px; padding:15px; background:#f8f9fa; border-radius:8px; display:none;">
+        <p id="certificateUrlLabel" style="font-size:14px; color:#666; margin:0 0 10px 0;">⏳ 合格証URL準備中…</p>
+        <a id="certificateUrl" href="#" target="_blank" style="font-size:12px; color:#667eea; word-break:break-all; display:none; margin-bottom:10px;"></a>
+        <button class="btn" id="certificateUrlCopyBtn" onclick="copyCertificateUrl()" style="background:#28a745; padding:10px 20px; font-size:14px; min-width:auto; display:none;">URLをコピー</button>
+      </div>
     </div>
   </div>
 
@@ -134,7 +146,33 @@ h1 { color:#333; margin-bottom:30px; font-size:26px;}
 
 </div>
 
+<!-- キャプチャ用固定サイズ合格証エリア（非表示） -->
+<div id="captureArea" style="position:absolute; left:-9999px; top:0; width:800px; height:565px;">
+  <div class="result-background" style="width:800px; height:565px; position:relative; margin:0;">
+    <img id="captureImage" src="" alt="合格証明書" class="result-bg-image" style="border-radius:0;">
+    <div class="result-overlay">
+      <div id="captureText" class="certificate-text"></div>
+    </div>
+  </div>
+</div>
+
 <script>
+// ========================================
+// 設定：画像ベースURL（カスタマイズ可能）
+// ========================================
+// デフォルト: GitHub Pagesの絶対URL（GASでも動作）
+const IMAGE_BASE_URL = 'https://nomynoma.github.io/storage/quizsample/imgs/';
+// フォーク時やローカル開発時は下記に変更
+// const IMAGE_BASE_URL = './imgs/';
+
+// ========================================
+// 設定：合格証ページベースURL（カスタマイズ可能）
+// ========================================
+// デフォルト: GitHub Pagesの絶対URL（GASでも動作）
+const CERTIFICATE_BASE_URL = 'https://nomynoma.github.io/storage/quizsample/certificate/';
+// フォーク時やローカル開発時は下記に変更
+// const CERTIFICATE_BASE_URL = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '') + '/certificate/';
+
 let nickname = '';
 let levels = ['初級','中級','上級'];
 let currentGenre = '';
@@ -155,14 +193,24 @@ function showScreen(id){
 // ニックネーム送信
 function submitNickname(){
   const input = document.getElementById('nicknameInput').value.trim();
+  const errorDiv = document.getElementById('nicknameError');
+
+  // エラーメッセージをクリア
+  errorDiv.style.display = 'none';
+  errorDiv.textContent = '';
+
+  // バリデーション
   if(input === ''){
-    alert('ニックネームを入力してください');
+    errorDiv.textContent = 'ニックネームを入力してください';
+    errorDiv.style.display = 'block';
     return;
   }
   if(input.length > 10){
-    alert('ニックネームは10文字以内で入力してください');
+    errorDiv.textContent = 'ニックネームは10文字以内で入力してください';
+    errorDiv.style.display = 'block';
     return;
   }
+
   nickname = input;
 
   // フォームを非表示にして「問題作成中」メッセージを表示
@@ -219,29 +267,37 @@ function showQuestion(){
   selectedChoices = [];
   const q = questions[currentQuestion];
   const isMultiple = q.selectionType === 'multiple';
+  const isInput = q.selectionType === 'input';
   const isImage = q.displayType === 'image';
 
   document.getElementById('questionNumber').textContent = '問題 ' + (currentQuestion+1) + ' / ' + questions.length;
-  document.getElementById('questionText').textContent = q.question;
+  document.getElementById('questionText').innerHTML = q.question;
   document.getElementById('feedback').innerHTML = '';
   document.getElementById('multipleInstruction').style.display = isMultiple ? 'block' : 'none';
 
-  // choiceMap作成
-  const choiceMap = { A: q.choiceA, B: q.choiceB, C: q.choiceC, D: q.choiceD };
-
   const choicesDiv = document.getElementById('choices');
-  let html = '<div class="image-grid">';
-  Object.keys(choiceMap).forEach(label => {
-    const onclick = isMultiple ? "toggleChoice('" + label + "')" : "checkAnswer('" + label + "')";
-    const buttonClass = 'btn choice-btn' + (isImage ? ' image-choice' : '');
-    const content = isImage
-      ? '<img src="' + choiceMap[label] + '" alt="選択肢' + label + '" onerror="this.src=\'https://via.placeholder.com/400x250?text=画像読込エラー\'"><div style="margin-top:8px;font-weight:bold;font-size:18px;">' + label + '</div>'
-      : label + ': ' + choiceMap[label];
-    html += '<button class="' + buttonClass + '" onclick="' + onclick + '">' + content + '</button>';
-  });
-  html += '</div>';
-  if(isMultiple) html += '<button id="submitBtn" class="btn submit-btn" onclick="submitMultipleAnswer()">解答する</button>';
-  choicesDiv.innerHTML = html;
+
+  // 入力問題の場合
+  if(isInput){
+    let html = '<input type="text" id="inputAnswer" placeholder="答えを入力してください" style="width:100%; max-width:300px; padding:15px; font-size:18px; border:2px solid #667eea; border-radius:8px; margin-bottom:20px; box-sizing:border-box; text-align:center;">';
+    html += '<button id="submitBtn" class="btn submit-btn" onclick="submitInputAnswer()">解答する</button>';
+    choicesDiv.innerHTML = html;
+  } else {
+    // 選択問題の場合（既存のコード）
+    const choiceMap = { A: q.choiceA, B: q.choiceB, C: q.choiceC, D: q.choiceD };
+    let html = '<div class="image-grid">';
+    Object.keys(choiceMap).forEach(label => {
+      const onclick = isMultiple ? "toggleChoice('" + label + "')" : "checkAnswer('" + label + "')";
+      const buttonClass = 'btn choice-btn' + (isImage ? ' image-choice' : '');
+      const content = isImage
+        ? '<img src="' + choiceMap[label] + '" alt="選択肢' + label + '" onerror="this.src=\'https://via.placeholder.com/400x250?text=画像読込エラー\'"><div style="margin-top:8px;font-weight:bold;font-size:18px;">' + label + '</div>'
+        : label + ': ' + choiceMap[label];
+      html += '<button class="' + buttonClass + '" onclick="' + onclick + '">' + content + '</button>';
+    });
+    html += '</div>';
+    if(isMultiple) html += '<button id="submitBtn" class="btn submit-btn" onclick="submitMultipleAnswer()">解答する</button>';
+    choicesDiv.innerHTML = html;
+  }
 
   showScreen('questionScreen');
 }
@@ -287,6 +343,22 @@ function checkAnswer(label){
   else{ feedbackDiv.innerHTML='<div class="result incorrect">✗ 不正解！正解は ' + q.answer + ' です</div><button class="btn" onclick="nextQuestion()">次へ</button>';}
 }
 
+// 入力問題
+function submitInputAnswer(){
+  if(answered) return;
+  const input = document.getElementById('inputAnswer').value.trim();
+  if(input === ''){ alert('答えを入力してください'); return;}
+  answered = true;
+  const q = questions[currentQuestion];
+  const feedbackDiv = document.getElementById('feedback');
+  const isCorrect = input === q.answer;
+  feedbackDiv.innerHTML = isCorrect ?
+    '<div class="result correct">✓ 正解！</div><button class="btn" onclick="nextQuestion()">次へ</button>' :
+    '<div class="result incorrect">✗ 不正解！正解は ' + q.answer + ' です</div><button class="btn" onclick="nextQuestion()">次へ</button>';
+  const submitBtn = document.getElementById('submitBtn'); if(submitBtn) submitBtn.style.display='none';
+  if(isCorrect) score++;
+}
+
 function nextQuestion(){ currentQuestion++; showQuestion(); }
 
 // レベル結果
@@ -314,14 +386,111 @@ function showCertificate(){
   const genreNumber = currentGenre.replace('ジャンル', '');
   const levelNumber = currentLevelIndex + 1; // 0:初級→1, 1:中級→2, 2:上級→3
 
-  // 合格証明書画像URLを設定
-  const imageUrl = 'https://nomynoma.github.io/storage/quizsample/imgs/frame_hyousyoujyou_' + genreNumber + '-' + levelNumber + '.jpg';
-  document.getElementById('certificateImage').src = imageUrl;
+  // 背景画像URLを設定（IMAGE_BASE_URLを使用）
+  const imageUrl = IMAGE_BASE_URL + 'frame_hyousyoujyou_' + genreNumber + '-' + levelNumber + '.jpg';
 
-  // テキストを設定
+  // テキスト内容を準備（名前と日付を右寄せで配置 - ％指定）
   const levelText = currentLevelIndex === 2 ? '上級全問正解' : levelName + '合格';
-  document.getElementById('certificateText').innerHTML =
-    '<h3>検定クイズ</h3>' + currentGenre + ' ' + levelText + '<BR/>' + nickname + '殿<br/><span style="font-size: 12px;">' + dateStr + '</span>';
+  const certificateTextHtml =
+    '<div style="position: absolute; top: 43%; right: 12%; font-size: 20px; font-weight: bold; text-align: right; transform: translateY(-50%);">' + nickname + '殿</div>' +
+    '<div style="position: absolute; bottom: 12%; right: 11%; font-size: 16px; text-align: right;">' + dateStr + '</div>' +
+    '<div style="position: absolute; bottom: 8%; right: 8%; font-size: 14px; text-align: right; color: #666;">' + genreNumber + '-' + levelNumber + '</div>';
+
+  // ローディング画面を表示して画像生成開始
+  showCertificateLoading(levelName, dateStr, imageUrl, certificateTextHtml);
+}
+
+// 合格証作成中ローディング表示 → 画像生成 → 合格証画面表示
+function showCertificateLoading(levelName, dateStr, imageUrl, certificateTextHtml){
+  // ローディング画面を表示（問題画面エリアを使用）
+  document.getElementById('questionNumber').innerHTML = '';
+  document.getElementById('multipleInstruction').style.display = 'none';
+  document.getElementById('questionText').innerHTML =
+    '<div style="text-align:center; padding:50px;">' +
+    '<div style="font-size:24px; font-weight:bold; color:#667eea; margin-bottom:20px;">🎉 おめでとうございます！</div>' +
+    '<div style="font-size:18px; margin-bottom:30px;">合格証を作成中...</div>' +
+    '<div style="display:inline-block; width:50px; height:50px; border:5px solid #f3f3f3; border-top:5px solid #667eea; border-radius:50%; animation:spin 1s linear infinite;"></div>' +
+    '</div>';
+  document.getElementById('choices').innerHTML = '';
+  document.getElementById('feedback').innerHTML = '';
+  showScreen('questionScreen'); // 問題画面エリアを使ってローディング表示
+
+  // キャプチャ用エリアに設定
+  document.getElementById('captureImage').src = imageUrl;
+  document.getElementById('captureText').innerHTML = certificateTextHtml;
+
+  // 背景画像の読み込みを待つ
+  const captureImg = document.getElementById('captureImage');
+  captureImg.onload = function() {
+    // 画像読み込み完了後、少し待ってからhtml2canvasで生成
+    setTimeout(() => {
+      generateAndSaveCertificate(levelName, dateStr, imageUrl, certificateTextHtml);
+    }, 100);
+  };
+
+  // 既に読み込み済みの場合（キャッシュ）
+  if (captureImg.complete) {
+    setTimeout(() => {
+      generateAndSaveCertificate(levelName, dateStr, imageUrl, certificateTextHtml);
+    }, 100);
+  }
+}
+
+// 合格証画像を生成してスプレッドシートに保存後、合格証画面を表示
+function generateAndSaveCertificate(levelName, dateStr, imageUrl, certificateTextHtml){
+  const captureArea = document.getElementById('captureArea');
+
+  html2canvas(captureArea, {
+    useCORS: true,
+    allowTaint: true,
+    backgroundColor: '#ffffff',
+    scale: 2,
+    width: 800,
+    height: 565
+  }).then(canvas => {
+    // canvasをBase64形式に変換（JPEG形式で圧縮して軽量化）
+    const imageDataBase64 = canvas.toDataURL('image/jpeg', 0.8);
+
+    // スプレッドシートに保存（サーバー側でハッシュ生成）
+    google.script.run
+      .withSuccessHandler(function(result){
+        console.log('合格証画像を保存しました。UUID: ' + result.uuid);
+        // 保存完了後に合格証画面を表示（生成した画像を渡す）
+        showCertificateScreen(levelName, imageDataBase64, certificateTextHtml, result.uuid);
+      })
+      .withFailureHandler(function(error){
+        console.error('画像保存エラー:', error);
+        // エラーでも画像は表示
+        showCertificateScreen(levelName, imageDataBase64, certificateTextHtml, null);
+      })
+      .saveCertificateData({
+        genre: currentGenre,
+        level: levelName,
+        nickname: nickname,
+        date: dateStr,
+        imageData: imageDataBase64
+      });
+  }).catch(error => {
+    console.error('html2canvasエラー:', error);
+    // エラー時は背景画像URLのみで表示（fallback）
+    const fallbackImg = new Image();
+    fallbackImg.crossOrigin = 'anonymous';
+    fallbackImg.src = imageUrl;
+    fallbackImg.onload = function() {
+      const fallbackCanvas = document.createElement('canvas');
+      fallbackCanvas.width = 800;
+      fallbackCanvas.height = 565;
+      const ctx = fallbackCanvas.getContext('2d');
+      ctx.drawImage(fallbackImg, 0, 0, 800, 565);
+      showCertificateScreen(levelName, fallbackCanvas.toDataURL('image/jpeg', 0.8), certificateTextHtml, null);
+    };
+  });
+}
+
+// 合格証画面を表示（生成した画像を使用）
+function showCertificateScreen(levelName, imageDataBase64, certificateTextHtml, uuid){
+  // 生成した画像を表示
+  document.getElementById('certificateDisplayImage').src = imageDataBase64;
 
   // ボタンの表示制御
   if(currentLevelIndex < levels.length - 1){
@@ -334,7 +503,19 @@ function showCertificate(){
     document.getElementById('certificateRestartBtn').style.display = 'block';
   }
 
+  // 合格証画面を表示
   showScreen('certificateScreen');
+
+  // UUIDがある場合はURLを表示
+  if(uuid){
+    displayCertificateUrl(uuid);
+  } else {
+    // エラー時は準備中のまま
+    document.getElementById('certificateUrlArea').style.display = 'block';
+    document.getElementById('certificateUrlLabel').textContent = '⚠️ 合格証URLの生成に失敗しました';
+    document.getElementById('certificateUrl').style.display = 'none';
+    document.getElementById('certificateUrlCopyBtn').style.display = 'none';
+  }
 }
 
 // Xで共有（合格時）
@@ -342,7 +523,7 @@ function shareToX(){
   const levelName = levels[currentLevelIndex];
   const levelText = currentLevelIndex === 2 ? '上級全問正解' : levelName + '合格';
   const text = 'クイズアプリで' + currentGenre + 'の' + levelText + 'しました！君も挑戦してみよう！';
-  const url = 'https://nomynoma.github.io/storage/quizsample/';
+  const url = window.location.origin + window.location.pathname;
   const twitterUrl = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(text) + '&url=' + encodeURIComponent(url);
   window.open(twitterUrl, '_blank', 'width=550,height=420');
 }
@@ -351,9 +532,48 @@ function shareToX(){
 function shareFailToX(){
   const levelName = levels[currentLevelIndex];
   const text = 'クイズアプリで' + currentGenre + 'の' + levelName + 'に挑戦したよ！' + score + '/' + questions.length + '問正解！君も挑戦してみよう！';
-  const url = 'https://nomynoma.github.io/storage/quizsample/';
+  const url = window.location.origin + window.location.pathname;
   const twitterUrl = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(text) + '&url=' + encodeURIComponent(url);
   window.open(twitterUrl, '_blank', 'width=550,height=420');
+}
+
+
+// 合格証URLを表示
+function displayCertificateUrl(hash){
+  // 合格証ページのURLを生成（CERTIFICATE_BASE_URLを使用）
+  const certificateUrl = CERTIFICATE_BASE_URL + '?g=' + hash;
+
+  // ラベルを更新
+  document.getElementById('certificateUrlLabel').textContent = '🔗 合格証URL（別窓で開けます）';
+
+  // URLとボタンを表示
+  document.getElementById('certificateUrl').href = certificateUrl;
+  document.getElementById('certificateUrl').textContent = certificateUrl;
+  document.getElementById('certificateUrl').style.display = 'block';
+  document.getElementById('certificateUrlCopyBtn').style.display = 'inline-block';
+  document.getElementById('certificateUrlArea').style.display = 'block';
+
+  // グローバル変数に保存（コピー用）
+  window.currentCertificateUrl = certificateUrl;
+}
+
+// 合格証URLをコピー
+function copyCertificateUrl(){
+  if(window.currentCertificateUrl){
+    navigator.clipboard.writeText(window.currentCertificateUrl).then(() => {
+      alert('URLをコピーしました！');
+    }).catch(err => {
+      console.error('コピー失敗:', err);
+      // フォールバック：テキストエリアを使う方法
+      const textarea = document.createElement('textarea');
+      textarea.value = window.currentCertificateUrl;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      alert('URLをコピーしました！');
+    });
+  }
 }
 
 // レベルをやり直す
