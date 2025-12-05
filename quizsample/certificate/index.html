@@ -82,12 +82,6 @@ if (!uuid) {
   iframe.src = GAS_DEPLOYMENT_URL + '?goukaku=' + encodeURIComponent(uuid);
   iframe.title = '合格証';
 
-  // 読み込み完了時の処理
-  iframe.onload = function() {
-    contentDiv.innerHTML = '';
-    contentDiv.appendChild(iframe);
-  };
-
   // エラー時の処理
   iframe.onerror = function() {
     contentDiv.innerHTML = `
@@ -99,7 +93,7 @@ if (!uuid) {
     `;
   };
 
-  // iframeを追加
+  // iframeを追加（1回のみ）
   contentDiv.innerHTML = '';
   contentDiv.appendChild(iframe);
 }
