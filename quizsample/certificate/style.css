@@ -27,19 +27,22 @@ body.entry-page {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: 0;
+  margin: 0;
+  overflow: hidden; /* スクロールバーを非表示 */
+  height: 100vh; /* 画面いっぱいの高さ */
 }
 
 iframe {
   width: 100%;
-  height: 90vh;
+  height: 100vh;
   border: none;
   background: transparent;
 }
 
 #content {
   width: 100%;
-  max-width: 1400px;
+  height: 100%;
 }
 
 /* ========================================
