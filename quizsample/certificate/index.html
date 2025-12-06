@@ -5,99 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>合格証</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🏆</text></svg>">
-<style>
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: #f0f2f5;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-.error-message {
-  background: white;
-  border-radius: 15px;
-  padding: 40px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-  max-width: 500px;
-  text-align: center;
-}
-.error-message h1 {
-  color: #e74c3c;
-  margin-bottom: 20px;
-}
-.error-message p {
-  color: #555;
-  line-height: 1.6;
-}
-iframe {
-  width: 100%;
-  height: 90vh;
-  border: none;
-  background: transparent;
-}
-#content {
-  width: 100%;
-  max-width: 1400px;
-}
-.loading {
-  text-align: center;
-  color: #667eea;
-  font-size: 20px;
-  font-weight: 600;
-}
-</style>
+<!-- 外部CSSファイル読み込み -->
+<link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="entry-page">
 <div id="content" class="loading">合格証を読み込んでいます...</div>
 
-<script>
-// GASのデプロイURLを設定
-const GAS_DEPLOYMENT_URL = 'https://script.google.com/macros/s/AKfycbwfhEmEVxN6cJfpBvC-ox4LStgfQxEkyZfvHEZtsHISzZj2Aa1MoMeMzlQNmCnko7ya/exec';
-
-// URLパラメータからUUIDを取得
-const urlParams = new URLSearchParams(window.location.search);
-const uuid = urlParams.get('g');
-
-const contentDiv = document.getElementById('content');
-
-if (!uuid) {
-  // UUIDがない場合はエラー表示
-  contentDiv.innerHTML = `
-    <div class="error-message">
-      <h1>⚠️ エラー</h1>
-      <p>合格証のIDが指定されていません。</p>
-      <p>正しいURLでアクセスしてください。</p>
-    </div>
-  `;
-} else {
-  // iframeでGASのURLを埋め込み表示
-  const iframe = document.createElement('iframe');
-  iframe.src = GAS_DEPLOYMENT_URL + '?goukaku=' + encodeURIComponent(uuid);
-  iframe.title = '合格証';
-
-  // エラー時の処理
-  iframe.onerror = function() {
-    contentDiv.innerHTML = `
-      <div class="error-message">
-        <h1>⚠️ エラー</h1>
-        <p>合格証の読み込みに失敗しました。</p>
-        <p>しばらく時間をおいてから再度お試しください。</p>
-      </div>
-    `;
-  };
-
-  // iframeを追加（1回のみ）
-  contentDiv.innerHTML = '';
-  contentDiv.appendChild(iframe);
-}
-</script>
+<!-- 外部JavaScriptファイル読み込み -->
+<script src="script.js"></script>
 </body>
 </html>
