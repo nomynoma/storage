@@ -307,17 +307,6 @@ h1 {
   font-family: 'Segoe UI', sans-serif;
 }
 
-/* 識別番号のスタイル */
-.certificate-id {
-  position: absolute;
-  bottom: 8%;
-  right: 8%;
-  font-size: 14px;
-  text-align: right;
-  color: #666;
-  font-family: 'Segoe UI', sans-serif;
-}
-
 /* 表示用の合格証エリア */
 .result-background {
   position: relative;

@@ -238,8 +238,7 @@ function showCertificate(){
   const levelText = currentLevelIndex === 2 ? '上級全問正解' : levelName + '合格';
   const certificateTextHtml =
     '<div class="certificate-nickname">' + nickname + '殿</div>' +
-    '<div class="certificate-date">' + dateStr + '</div>' +
-    '<div class="certificate-id">' + genreNumber + '-' + levelNumber + '</div>';
+    '<div class="certificate-date">' + dateStr + '</div>';
 
   // ローディング画面を表示して画像生成開始
   showCertificateLoading(levelName, dateStr, imageUrl, certificateTextHtml);
