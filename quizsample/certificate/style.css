@@ -48,32 +48,29 @@ iframe {
    ======================================== */
 body.view-page {
   margin: 0;
-  padding: 10px;
+  padding: 0;
   text-align: center;
-}
-
-@media (min-width: 768px) {
-  body.view-page {
-    padding: 20px;
-  }
+  overflow: hidden; /* スクロールバーを非表示 */
+  height: 100vh; /* 画面いっぱいの高さ */
+  display: flex;
+  flex-direction: column;
 }
 
 .container {
   background: white;
-  border-radius: 15px;
   padding: 20px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-  max-width: 100%;
-  width: 100%;
-  margin: 0 auto;
   box-sizing: border-box;
+  flex: 1; /* 残りスペースを全て使う */
+  overflow-y: auto; /* コンテナ内でスクロール */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 @media (min-width: 768px) {
   .container {
     padding: 50px;
-    max-width: none;
-    width: 95%;
   }
 }
 
