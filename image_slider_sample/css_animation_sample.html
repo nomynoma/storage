@@ -109,21 +109,42 @@
     <!-- 1列目（右方向） -->
     <div class="slider-row">
         <div class="slider-container">
-            <div class="slider" id="slider1" data-images='["https://picsum.photos/1920/1080?random=1", "https://picsum.photos/1920/1080?random=2", "https://picsum.photos/1920/1080?random=3", "https://picsum.photos/1920/1080?random=4", "https://picsum.photos/1920/1080?random=5"]'></div>
+            <div class="slider" id="slider1" data-images='[
+            "https://picsum.photos/1920/1080?random=1",
+            "https://picsum.photos/1920/1080?random=2",
+            "https://picsum.photos/1920/1080?random=3",
+            "https://picsum.photos/1920/1080?random=4",
+            "https://picsum.photos/1920/1080?random=5",
+            "https://picsum.photos/1920/1080?random=6",
+            "https://picsum.photos/1920/1080?random=7",
+            "https://picsum.photos/1920/1080?random=8",
+            "https://picsum.photos/1920/1080?random=9",
+            "https://picsum.photos/1920/1080?random=10",
+            "https://picsum.photos/1920/1080?random=11",
+            "https://picsum.photos/1920/1080?random=12",
+            "https://picsum.photos/1920/1080?random=13",
+            "https://picsum.photos/1920/1080?random=14",
+            "https://picsum.photos/1920/1080?random=15",
+            "https://picsum.photos/1920/1080?random=16",
+            "https://picsum.photos/1920/1080?random=17",
+            "https://picsum.photos/1920/1080?random=18",
+            "https://picsum.photos/1920/1080?random=19",
+            "https://picsum.photos/1920/1080?random=20"
+            ]'></div>
         </div>
     </div>
 
     <!-- 2列目（左方向） -->
     <div class="slider-row">
         <div class="slider-container">
-            <div class="slider" id="slider2" data-images='["https://picsum.photos/1920/1080?random=6", "https://picsum.photos/1920/1080?random=7", "https://picsum.photos/1920/1080?random=8", "https://picsum.photos/1920/1080?random=9", "https://picsum.photos/1920/1080?random=10"]'></div>
+            <div class="slider" id="slider2" data-images='["https://picsum.photos/1920/1080?random=21", "https://picsum.photos/1920/1080?random=22", "https://picsum.photos/1920/1080?random=23", "https://picsum.photos/1920/1080?random=24", "https://picsum.photos/1920/1080?random=25", "https://picsum.photos/1920/1080?random=26", "https://picsum.photos/1920/1080?random=27", "https://picsum.photos/1920/1080?random=28", "https://picsum.photos/1920/1080?random=29", "https://picsum.photos/1920/1080?random=30", "https://picsum.photos/1920/1080?random=31", "https://picsum.photos/1920/1080?random=32", "https://picsum.photos/1920/1080?random=33", "https://picsum.photos/1920/1080?random=34", "https://picsum.photos/1920/1080?random=35", "https://picsum.photos/1920/1080?random=36", "https://picsum.photos/1920/1080?random=37", "https://picsum.photos/1920/1080?random=38", "https://picsum.photos/1920/1080?random=39", "https://picsum.photos/1920/1080?random=40"]'></div>
         </div>
     </div>
 
     <!-- 3列目（右方向・速度違い） -->
     <div class="slider-row">
         <div class="slider-container">
-            <div class="slider" id="slider3" data-images='["https://picsum.photos/1920/1080?random=11", "https://picsum.photos/1920/1080?random=12", "https://picsum.photos/1920/1080?random=13", "https://picsum.photos/1920/1080?random=14", "https://picsum.photos/1920/1080?random=15"]'></div>
+            <div class="slider" id="slider3" data-images='["https://picsum.photos/1920/1080?random=41", "https://picsum.photos/1920/1080?random=42", "https://picsum.photos/1920/1080?random=43", "https://picsum.photos/1920/1080?random=44", "https://picsum.photos/1920/1080?random=45", "https://picsum.photos/1920/1080?random=46", "https://picsum.photos/1920/1080?random=47", "https://picsum.photos/1920/1080?random=48", "https://picsum.photos/1920/1080?random=49", "https://picsum.photos/1920/1080?random=50", "https://picsum.photos/1920/1080?random=51", "https://picsum.photos/1920/1080?random=52", "https://picsum.photos/1920/1080?random=53", "https://picsum.photos/1920/1080?random=54", "https://picsum.photos/1920/1080?random=55", "https://picsum.photos/1920/1080?random=56", "https://picsum.photos/1920/1080?random=57", "https://picsum.photos/1920/1080?random=58", "https://picsum.photos/1920/1080?random=59", "https://picsum.photos/1920/1080?random=60"]'></div>
         </div>
     </div>
 
@@ -134,7 +155,7 @@
          * @param {number} duration - 1周するのにかかる秒数
          * @param {boolean} reverse - 逆方向にするか（デフォルト: false）
          */
-        function createSlider(id, duration = 20, reverse = false) {
+        function createSlider(id, duration = 400, reverse = false) {
             const slider = document.getElementById(id);
             const images = JSON.parse(slider.dataset.images || '[]');
 
@@ -166,9 +187,9 @@
         }
 
         // 各スライダーを初期化
-        createSlider('slider1', 20, false);  // 1列目（右方向、20秒）
-        createSlider('slider2', 20, true);   // 2列目（左方向、20秒）
-        createSlider('slider3', 15, false);  // 3列目（右方向、15秒・速い）
+        createSlider('slider1', 80, false);  // 1列目（右方向、80秒）
+        createSlider('slider2', 80, true);   // 2列目（左方向、80秒）
+        createSlider('slider3', 60, false);  // 3列目（右方向、60秒・速い）
     </script>
 </body>
 </html>
