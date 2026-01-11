@@ -139,8 +139,6 @@
             if (tween) tween.kill();
         
             const slides = Array.from(slider.querySelectorAll('.slide'));
-        
-            // 最後の1枚は複製なので除外
             const realSlides = slides.slice(0, slides.length - 1);
             if (!realSlides.length) return;
         
@@ -150,10 +148,8 @@
             const totalWidth = slideWidth * realSlides.length;
             const duration = secondsPerSlide * realSlides.length;
         
-            // 開始位置
-            gsap.set(slider, {
-              x: reverse ? -totalWidth : 0
-            });
+            // ★ 開始位置は必ず 0
+            gsap.set(slider, { x: 0 });
         
             tween = gsap.to(slider, {
               x: direction * totalWidth,
@@ -162,25 +158,26 @@
               repeat: -1,
               modifiers: {
                 x: gsap.utils.unitize(x => {
-                  return parseFloat(x) % totalWidth;
+                  const v = parseFloat(x) % totalWidth;
+                  // ★ 負数を正規化
+                  return v < 0 ? v + totalWidth : v;
                 })
               }
             });
           }
         
-          // 画像ロード完了後に初期化
           window.addEventListener('load', setup);
         
-          // リサイズ対応
           const ro = new ResizeObserver(setup);
           ro.observe(slider.parentElement);
         }
         
-        // 初期化（見た目そのまま）
+        // 3列そのまま
         createGsapSlider('gsap1', { secondsPerSlide: 4, reverse: false });
         createGsapSlider('gsap2', { secondsPerSlide: 4, reverse: true });
         createGsapSlider('gsap3', { secondsPerSlide: 4, reverse: false });
     </script>
+
 
 
 </body>
