@@ -124,70 +124,45 @@
     <!-- GSAP -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
     
-<script>
-function createGsapSlider(id, {
-  secondsPerSlide = 4,
-  reverse = false
-}) {
-  const slider = document.getElementById(id);
-  if (!slider) return;
-
-  let tween;
-  const direction = reverse ? 1 : -1;
-
-  function setup() {
-    if (tween) tween.kill();
-
-    const allSlides = Array.from(slider.querySelectorAll('.slide'));
-    if (allSlides.length < 2) return;
-
-    // HTML上の「最後の1枚は複製」という前提
-    const realSlides = allSlides.slice(0, allSlides.length - 1);
-
-    const slideWidth = realSlides[0].getBoundingClientRect().width;
-    if (!slideWidth) return;
-
-    const realWidth = slideWidth * realSlides.length;
-
-    // ★ DOMが2セット分以上になるまで複製
-    while (slider.scrollWidth < realWidth * 2) {
-      realSlides.forEach(slide => {
-        slider.appendChild(slide.cloneNode(true));
-      });
-    }
-
-    const duration = secondsPerSlide * realSlides.length;
-
-    gsap.set(slider, { x: 0 });
-
-    tween = gsap.to(slider, {
-      x: direction * realWidth,
-      duration,
-      ease: "none",
-      repeat: -1,
-      modifiers: {
-        x: gsap.utils.unitize(x => {
-          const v = parseFloat(x) % realWidth;
-          return v < 0 ? v + realWidth : v;
-        })
-      }
-    });
-  }
-
-  window.addEventListener('load', setup);
-
-  const ro = new ResizeObserver(setup);
-  ro.observe(slider.parentElement);
-}
-
-// 見た目・列数そのまま
-createGsapSlider('gsap1', { secondsPerSlide: 4, reverse: false });
-createGsapSlider('gsap2', { secondsPerSlide: 4, reverse: true });
-createGsapSlider('gsap3', { secondsPerSlide: 4, reverse: false });
-</script>
-
-
-
-
+    <script>
+        // GSAP版スライダー作成関数（修正版）
+        function createGsapSlider(id, duration, reverse = false) {
+            const slider = document.getElementById(id);
+            const slideWidth = 300 * (16/9); // height * aspect ratio
+            const slides = slider.querySelectorAll('.slide');
+            const totalSlides = slides.length - 1; // 最後の1枚は複製なので除く
+            const totalWidth = slideWidth * totalSlides;
+            
+            if (reverse) {
+                // 逆方向の場合
+                gsap.set(`#${id}`, { x: -slideWidth }); // 開始位置を調整
+                gsap.to(`#${id}`, {
+                    x: 0,
+                    duration: duration,
+                    ease: 'none',
+                    repeat: -1,
+                    onRepeat: function() {
+                        gsap.set(`#${id}`, { x: -slideWidth });
+                    }
+                });
+            } else {
+                // 順方向の場合
+                gsap.to(`#${id}`, {
+                    x: -totalWidth,
+                    duration: duration * totalSlides,
+                    ease: 'none',
+                    repeat: -1,
+                    onRepeat: function() {
+                        gsap.set(`#${id}`, { x: 0 });
+                    }
+                });
+            }
+        }
+        
+        // 各スライダーを初期化
+        createGsapSlider('gsap1', 4);      // 1列目（右方向、4秒/枚）
+        createGsapSlider('gsap2', 4, true); // 2列目（左方向、4秒/枚）
+        createGsapSlider('gsap3', 4);    // 3列目（右方向、4秒/枚）
+    </script>
 </body>
 </html>
