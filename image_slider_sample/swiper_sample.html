@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Swiper版 - 3列スライダー</title>
+    
+    <!-- Swiper CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #1a1a1a;
+            overflow-x: hidden;
+        }
+        
+        h1 {
+            color: white;
+            text-align: center;
+            padding: 30px 0;
+            font-size: 28px;
+        }
+        
+        .slider-row {
+            margin-bottom: 20px;
+        }
+        
+        .swiper {
+            width: 100vw;
+            height: 300px;
+        }
+        
+        .swiper-slide {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: auto !important;
+        }
+        
+        .swiper-wrapper {
+            transition-timing-function: linear !important;
+        }
+        
+        .slide {
+            height: 100%;
+            width: auto;
+            aspect-ratio: 16/9;
+            object-fit: cover;
+            display: block;
+        }
+        
+        .info {
+            color: white;
+            text-align: center;
+            padding: 20px;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+        
+        .info code {
+            background: #333;
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: #4facfe;
+        }
+    </style>
+</head>
+<body>
+    <h1>Swiper版 - 3列スライダー</h1>
+    
+    <div class="info">
+        速度調整: <code>speed: 4000</code> ← この数値を変更（大きいほどゆっくり）<br>
+        逆方向: <code>reverseDirection: true</code> ← これで逆方向<br>
+        操作無効: <code>allowTouchMove: false</code> で設定済み
+    </div>
+    
+    <!-- 1列目（右方向） -->
+    <div class="slider-row">
+        <div class="swiper swiper1">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide">
+                    <img src="https://picsum.photos/1920/1080?random=1" alt="画像1" class="slide" loading="lazy">
+                </div>
+                <div class="swiper-slide">
+                    <img src="https://picsum.photos/1920/1080?random=2" alt="画像2" class="slide" loading="lazy">
+                </div>
+                <div class="swiper-slide">
+                    <img src="https://picsum.photos/1920/1080?random=3" alt="画像3" class="slide" loading="lazy">
+                </div>
+                <div class="swiper-slide">
+                    <img src="https://picsum.photos/1920/1080?random=4" alt="画像4" class="slide" loading="lazy">
+                </div>
+                <div class="swiper-slide">
+                    <img src="https://picsum.photos/1920/1080?random=5" alt="画像5" class="slide" loading="lazy">
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 2列目（左方向） -->
+    <div class="slider-row">
+        <div class="swiper swiper2">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide">
+                    <img src="https://picsum.photos/1920/1080?random=6" alt="画像6" class="slide" loading="lazy">
+                </div>
+                <div class="swiper-slide">
+                    <img src="https://picsum.photos/1920/1080?random=7" alt="画像7" class="slide" loading="lazy">
+                </div>
+                <div class="swiper-slide">
+                    <img src="https://picsum.photos/1920/1080?random=8" alt="画像8" class="slide" loading="lazy">
+                </div>
+                <div class="swiper-slide">
+                    <img src="https://picsum.photos/1920/1080?random=9" alt="画像9" class="slide" loading="lazy">
+                </div>
+                <div class="swiper-slide">
+                    <img src="https://picsum.photos/1920/1080?random=10" alt="画像10" class="slide" loading="lazy">
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 3列目（右方向・速度違い） -->
+    <div class="slider-row">
+        <div class="swiper swiper3">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide">
+                    <img src="https://picsum.photos/1920/1080?random=11" alt="画像11" class="slide" loading="lazy">
+                </div>
+                <div class="swiper-slide">
+                    <img src="https://picsum.photos/1920/1080?random=12" alt="画像12" class="slide" loading="lazy">
+                </div>
+                <div class="swiper-slide">
+                    <img src="https://picsum.photos/1920/1080?random=13" alt="画像13" class="slide" loading="lazy">
+                </div>
+                <div class="swiper-slide">
+                    <img src="https://picsum.photos/1920/1080?random=14" alt="画像14" class="slide" loading="lazy">
+                </div>
+                <div class="swiper-slide">
+                    <img src="https://picsum.photos/1920/1080?random=15" alt="画像15" class="slide" loading="lazy">
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Swiper JS -->
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    
+    <script>
+        // 1列目（右方向）
+        const swiper1 = new Swiper('.swiper1', {
+            slidesPerView: 'auto',
+            spaceBetween: 0,
+            loop: true,
+            speed: 4000,
+            autoplay: {
+                delay: 0,
+                disableOnInteraction: false,
+            },
+            freeMode: true,
+            freeModeMomentum: false,
+            allowTouchMove: false,  // ドラッグ無効
+            simulateTouch: false,   // タッチ操作無効
+        });
+        
+        // 2列目（左方向・速度違い）
+        const swiper2 = new Swiper('.swiper2', {
+            slidesPerView: 'auto',
+            spaceBetween: 0,
+            loop: true,
+            speed: 5000,
+            autoplay: {
+                delay: 0,
+                disableOnInteraction: false,
+                reverseDirection: true,  // 逆方向
+            },
+            freeMode: true,
+            freeModeMomentum: false,
+            allowTouchMove: false,
+            simulateTouch: false,
+        });
+        
+        // 3列目（右方向・さらに速度違い）
+        const swiper3 = new Swiper('.swiper3', {
+            slidesPerView: 'auto',
+            spaceBetween: 0,
+            loop: true,
+            speed: 3500,
+            autoplay: {
+                delay: 0,
+                disableOnInteraction: false,
+            },
+            freeMode: true,
+            freeModeMomentum: false,
+            allowTouchMove: false,
+            simulateTouch: false,
+        });
+    </script>
+</body>
+</html>
