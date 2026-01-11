@@ -5,164 +5,140 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GSAP版 - 3列スライダー</title>
     
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Arial', sans-serif;
-            background: #1a1a1a;
-            overflow-x: hidden;
-        }
-        
-        h1 {
-            color: white;
-            text-align: center;
-            padding: 30px 0;
-            font-size: 28px;
-        }
-        
-        .slider-row {
-            margin-bottom: 20px;
-        }
-        
-        .gsap-container {
-            width: 100vw;
-            height: 300px;
-            overflow: hidden;
-            position: relative;
-            background: #000;
-        }
-        
-        .gsap-slider {
-            display: flex;
-            width: fit-content;
-            height: 100%;
-        }
-        
-        .slide {
-            height: 100%;
-            width: auto;
-            aspect-ratio: 16/9;
-            object-fit: cover;
-            display: block;
-            flex-shrink: 0;
-        }
-        
-        .info {
-            color: white;
-            text-align: center;
-            padding: 20px;
-            font-size: 14px;
-            line-height: 1.8;
-        }
-        
-        .info code {
-            background: #333;
-            padding: 2px 6px;
-            border-radius: 3px;
-            color: #4facfe;
-        }
-    </style>
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: #111;
+  color: #fff;
+  font-family: Arial, sans-serif;
+}
+
+h1 {
+  text-align: center;
+  padding: 24px 0;
+}
+
+.slider-row {
+  margin-bottom: 24px;
+}
+
+.gsap-container {
+  width: 100%;
+  height: 300px;
+  overflow: hidden;
+  background: #000;
+}
+
+.gsap-slider {
+  display: flex;
+  height: 100%;
+}
+
+.slide {
+  height: 100%;
+  width: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  flex-shrink: 0;
+  display: block;
+}
+</style>
 </head>
+
 <body>
-    <h1>GSAP版 - 3列スライダー</h1>
-    
-    <div class="info">
-        速度調整: <code>createGsapSlider('gsap1', 3)</code> ← この数値を変更<br>
-        逆方向: <code>createGsapSlider('gsap2', 4, true)</code> ← 第3引数をtrue
+
+<h1>GSAP 無限スライダー（完全対称・可変・レスポンシブ）</h1>
+
+<!-- 右方向 -->
+<div class="slider-row">
+  <div class="gsap-container">
+    <div class="gsap-slider" id="slider1">
+      <img class="slide" src="https://picsum.photos/1920/1080?1">
+      <img class="slide" src="https://picsum.photos/1920/1080?2">
+      <img class="slide" src="https://picsum.photos/1920/1080?3">
+      <img class="slide" src="https://picsum.photos/1920/1080?4">
     </div>
-    
-    <!-- 1列目（右方向） -->
-    <div class="slider-row">
-        <div class="gsap-container">
-            <div class="gsap-slider" id="gsap1">
-                <img src="https://picsum.photos/1920/1080?random=1" alt="画像1" class="slide" loading="lazy">
-                <img src="https://picsum.photos/1920/1080?random=2" alt="画像2" class="slide" loading="lazy">
-                <img src="https://picsum.photos/1920/1080?random=3" alt="画像3" class="slide" loading="lazy">
-                <img src="https://picsum.photos/1920/1080?random=4" alt="画像4" class="slide" loading="lazy">
-                <img src="https://picsum.photos/1920/1080?random=5" alt="画像5" class="slide" loading="lazy">
-                <!-- ループ用に最初の画像を複製 -->
-                <img src="https://picsum.photos/1920/1080?random=1" alt="画像1" class="slide" loading="lazy">
-            </div>
-        </div>
+  </div>
+</div>
+
+<!-- 左方向 -->
+<div class="slider-row">
+  <div class="gsap-container">
+    <div class="gsap-slider" id="slider2">
+      <img class="slide" src="https://picsum.photos/1920/1080?5">
+      <img class="slide" src="https://picsum.photos/1920/1080?6">
+      <img class="slide" src="https://picsum.photos/1920/1080?7">
+      <img class="slide" src="https://picsum.photos/1920/1080?8">
     </div>
-    
-    <!-- 2列目（左方向） -->
-    <div class="slider-row">
-        <div class="gsap-container">
-            <div class="gsap-slider" id="gsap2">
-                <img src="https://picsum.photos/1920/1080?random=6" alt="画像6" class="slide" loading="lazy">
-                <img src="https://picsum.photos/1920/1080?random=7" alt="画像7" class="slide" loading="lazy">
-                <img src="https://picsum.photos/1920/1080?random=8" alt="画像8" class="slide" loading="lazy">
-                <img src="https://picsum.photos/1920/1080?random=9" alt="画像9" class="slide" loading="lazy">
-                <img src="https://picsum.photos/1920/1080?random=10" alt="画像10" class="slide" loading="lazy">
-                <!-- ループ用に最初の画像を複製 -->
-                <img src="https://picsum.photos/1920/1080?random=6" alt="画像6" class="slide" loading="lazy">
-            </div>
-        </div>
-    </div>
-    
-    <!-- 3列目（右方向・速度違い） -->
-    <div class="slider-row">
-        <div class="gsap-container">
-            <div class="gsap-slider" id="gsap3">
-                <img src="https://picsum.photos/1920/1080?random=11" alt="画像11" class="slide" loading="lazy">
-                <img src="https://picsum.photos/1920/1080?random=12" alt="画像12" class="slide" loading="lazy">
-                <img src="https://picsum.photos/1920/1080?random=13" alt="画像13" class="slide" loading="lazy">
-                <img src="https://picsum.photos/1920/1080?random=14" alt="画像14" class="slide" loading="lazy">
-                <img src="https://picsum.photos/1920/1080?random=15" alt="画像15" class="slide" loading="lazy">
-                <!-- ループ用に最初の画像を複製 -->
-                <img src="https://picsum.photos/1920/1080?random=11" alt="画像11" class="slide" loading="lazy">
-            </div>
-        </div>
-    </div>
-    
-    <!-- GSAP -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-    
-    <script>
-        // GSAP版スライダー作成関数（修正版）
-        function createGsapSlider(id, duration, reverse = false) {
-            const slider = document.getElementById(id);
-            const slideWidth = 300 * (16/9); // height * aspect ratio
-            const slides = slider.querySelectorAll('.slide');
-            const totalSlides = slides.length - 1; // 最後の1枚は複製なので除く
-            const totalWidth = slideWidth * totalSlides;
-            
-            if (reverse) {
-                // 逆方向の場合
-                gsap.set(`#${id}`, { x: -slideWidth }); // 開始位置を調整
-                gsap.to(`#${id}`, {
-                    x: 0,
-                    duration: duration,
-                    ease: 'none',
-                    repeat: -1,
-                    onRepeat: function() {
-                        gsap.set(`#${id}`, { x: -slideWidth });
-                    }
-                });
-            } else {
-                // 順方向の場合
-                gsap.to(`#${id}`, {
-                    x: -totalWidth,
-                    duration: duration * totalSlides,
-                    ease: 'none',
-                    repeat: -1,
-                    onRepeat: function() {
-                        gsap.set(`#${id}`, { x: 0 });
-                    }
-                });
-            }
-        }
-        
-        // 各スライダーを初期化
-        createGsapSlider('gsap1', 4);      // 1列目（右方向、4秒/枚）
-        createGsapSlider('gsap2', 4, true); // 2列目（左方向、4秒/枚）
-        createGsapSlider('gsap3', 4);    // 3列目（右方向、4秒/枚）
-    </script>
+  </div>
+</div>
+
+<!-- GSAP -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+<script>
+function createInfiniteSlider(slider, {
+  secondsPerSlide = 4,
+  reverse = false
+}) {
+  let tween;
+  const direction = reverse ? 1 : -1;
+
+  function setup() {
+    if (tween) tween.kill();
+
+    const slides = slider.querySelectorAll('.slide');
+    if (!slides.length) return;
+
+    const slideWidth = slides[0].getBoundingClientRect().width;
+    const totalWidth = slideWidth * slides.length;
+
+    // ループ用に自動複製（不足分だけ）
+    while (slider.scrollWidth < totalWidth * 2) {
+      slides.forEach(slide => {
+        slider.appendChild(slide.cloneNode(true));
+      });
+    }
+
+    const duration = secondsPerSlide * slides.length;
+
+    tween = gsap.to(slider, {
+      x: direction * totalWidth,
+      duration,
+      ease: "none",
+      repeat: -1,
+      modifiers: {
+        x: gsap.utils.unitize(x => {
+          const v = parseFloat(x) % totalWidth;
+          return v;
+        })
+      }
+    });
+  }
+
+  setup();
+
+  // リサイズ完全対応
+  const ro = new ResizeObserver(setup);
+  ro.observe(slider.parentElement);
+}
+
+// 初期化（direction 以外は全共通）
+createInfiniteSlider(
+  document.getElementById("slider1"),
+  { secondsPerSlide: 4, reverse: false }
+);
+
+createInfiniteSlider(
+  document.getElementById("slider2"),
+  { secondsPerSlide: 4, reverse: true }
+);
+</script>
+
 </body>
 </html>
