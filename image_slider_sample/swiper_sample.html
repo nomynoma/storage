@@ -78,7 +78,8 @@
     <div class="info">
         速度調整: <code>speed: 4000</code> ← この数値を変更（大きいほどゆっくり）<br>
         逆方向: <code>reverseDirection: true</code> ← これで逆方向<br>
-        操作無効: <code>allowTouchMove: false</code> で設定済み
+        操作無効: <code>allowTouchMove: false</code> で設定済み<br>
+        <strong>Lazy Load有効:</strong> 表示中 + 前後2枚のみ読み込み（100枚でも快適）
     </div>
     
     <!-- 1列目（右方向） -->
@@ -86,19 +87,24 @@
         <div class="swiper swiper1">
             <div class="swiper-wrapper">
                 <div class="swiper-slide">
-                    <img src="https://picsum.photos/1920/1080?random=1" alt="画像1" class="slide" loading="lazy">
+                    <img data-src="https://picsum.photos/1920/1080?random=1" alt="画像1" class="slide swiper-lazy">
+                    <div class="swiper-lazy-preloader"></div>
                 </div>
                 <div class="swiper-slide">
-                    <img src="https://picsum.photos/1920/1080?random=2" alt="画像2" class="slide" loading="lazy">
+                    <img data-src="https://picsum.photos/1920/1080?random=2" alt="画像2" class="slide swiper-lazy">
+                    <div class="swiper-lazy-preloader"></div>
                 </div>
                 <div class="swiper-slide">
-                    <img src="https://picsum.photos/1920/1080?random=3" alt="画像3" class="slide" loading="lazy">
+                    <img data-src="https://picsum.photos/1920/1080?random=3" alt="画像3" class="slide swiper-lazy">
+                    <div class="swiper-lazy-preloader"></div>
                 </div>
                 <div class="swiper-slide">
-                    <img src="https://picsum.photos/1920/1080?random=4" alt="画像4" class="slide" loading="lazy">
+                    <img data-src="https://picsum.photos/1920/1080?random=4" alt="画像4" class="slide swiper-lazy">
+                    <div class="swiper-lazy-preloader"></div>
                 </div>
                 <div class="swiper-slide">
-                    <img src="https://picsum.photos/1920/1080?random=5" alt="画像5" class="slide" loading="lazy">
+                    <img data-src="https://picsum.photos/1920/1080?random=5" alt="画像5" class="slide swiper-lazy">
+                    <div class="swiper-lazy-preloader"></div>
                 </div>
             </div>
         </div>
@@ -109,19 +115,24 @@
         <div class="swiper swiper2">
             <div class="swiper-wrapper">
                 <div class="swiper-slide">
-                    <img src="https://picsum.photos/1920/1080?random=6" alt="画像6" class="slide" loading="lazy">
+                    <img data-src="https://picsum.photos/1920/1080?random=6" alt="画像6" class="slide swiper-lazy">
+                    <div class="swiper-lazy-preloader"></div>
                 </div>
                 <div class="swiper-slide">
-                    <img src="https://picsum.photos/1920/1080?random=7" alt="画像7" class="slide" loading="lazy">
+                    <img data-src="https://picsum.photos/1920/1080?random=7" alt="画像7" class="slide swiper-lazy">
+                    <div class="swiper-lazy-preloader"></div>
                 </div>
                 <div class="swiper-slide">
-                    <img src="https://picsum.photos/1920/1080?random=8" alt="画像8" class="slide" loading="lazy">
+                    <img data-src="https://picsum.photos/1920/1080?random=8" alt="画像8" class="slide swiper-lazy">
+                    <div class="swiper-lazy-preloader"></div>
                 </div>
                 <div class="swiper-slide">
-                    <img src="https://picsum.photos/1920/1080?random=9" alt="画像9" class="slide" loading="lazy">
+                    <img data-src="https://picsum.photos/1920/1080?random=9" alt="画像9" class="slide swiper-lazy">
+                    <div class="swiper-lazy-preloader"></div>
                 </div>
                 <div class="swiper-slide">
-                    <img src="https://picsum.photos/1920/1080?random=10" alt="画像10" class="slide" loading="lazy">
+                    <img data-src="https://picsum.photos/1920/1080?random=10" alt="画像10" class="slide swiper-lazy">
+                    <div class="swiper-lazy-preloader"></div>
                 </div>
             </div>
         </div>
@@ -132,19 +143,24 @@
         <div class="swiper swiper3">
             <div class="swiper-wrapper">
                 <div class="swiper-slide">
-                    <img src="https://picsum.photos/1920/1080?random=11" alt="画像11" class="slide" loading="lazy">
+                    <img data-src="https://picsum.photos/1920/1080?random=11" alt="画像11" class="slide swiper-lazy">
+                    <div class="swiper-lazy-preloader"></div>
                 </div>
                 <div class="swiper-slide">
-                    <img src="https://picsum.photos/1920/1080?random=12" alt="画像12" class="slide" loading="lazy">
+                    <img data-src="https://picsum.photos/1920/1080?random=12" alt="画像12" class="slide swiper-lazy">
+                    <div class="swiper-lazy-preloader"></div>
                 </div>
                 <div class="swiper-slide">
-                    <img src="https://picsum.photos/1920/1080?random=13" alt="画像13" class="slide" loading="lazy">
+                    <img data-src="https://picsum.photos/1920/1080?random=13" alt="画像13" class="slide swiper-lazy">
+                    <div class="swiper-lazy-preloader"></div>
                 </div>
                 <div class="swiper-slide">
-                    <img src="https://picsum.photos/1920/1080?random=14" alt="画像14" class="slide" loading="lazy">
+                    <img data-src="https://picsum.photos/1920/1080?random=14" alt="画像14" class="slide swiper-lazy">
+                    <div class="swiper-lazy-preloader"></div>
                 </div>
                 <div class="swiper-slide">
-                    <img src="https://picsum.photos/1920/1080?random=15" alt="画像15" class="slide" loading="lazy">
+                    <img data-src="https://picsum.photos/1920/1080?random=15" alt="画像15" class="slide swiper-lazy">
+                    <div class="swiper-lazy-preloader"></div>
                 </div>
             </div>
         </div>
@@ -168,6 +184,10 @@
             freeModeMomentum: false,
             allowTouchMove: false,  // ドラッグ無効
             simulateTouch: false,   // タッチ操作無効
+            lazy: {
+                loadPrevNext: true,
+                loadPrevNextAmount: 2,  // 前後2枚のみ読み込む
+            },
         });
         
         // 2列目（左方向・速度違い）
@@ -185,6 +205,10 @@
             freeModeMomentum: false,
             allowTouchMove: false,
             simulateTouch: false,
+            lazy: {
+                loadPrevNext: true,
+                loadPrevNextAmount: 2,
+            },
         });
         
         // 3列目（右方向・さらに速度違い）
@@ -201,6 +225,10 @@
             freeModeMomentum: false,
             allowTouchMove: false,
             simulateTouch: false,
+            lazy: {
+                loadPrevNext: true,
+                loadPrevNextAmount: 2,
+            },
         });
     </script>
 </body>
