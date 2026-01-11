@@ -125,32 +125,44 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
     
     <script>
-        // GSAP版スライダー作成関数
+        // GSAP版スライダー作成関数（修正版）
         function createGsapSlider(id, duration, reverse = false) {
             const slider = document.getElementById(id);
             const slideWidth = 300 * (16/9); // height * aspect ratio
             const slides = slider.querySelectorAll('.slide');
+            const totalSlides = slides.length - 1; // 最後の1枚は複製なので除く
+            const totalWidth = slideWidth * totalSlides;
             
-            gsap.to(`#${id}`, {
-                x: reverse ? `+=${slideWidth}` : `-=${slideWidth}`,
-                duration: duration,
-                ease: 'none',
-                repeat: -1,
-                modifiers: {
-                    x: function(x) {
-                        const totalSlides = slides.length - 1; // 最後は複製
-                        const loopWidth = slideWidth * totalSlides;
-                        const value = parseFloat(x) % loopWidth;
-                        return (reverse ? -value : value) + 'px';
+            if (reverse) {
+                // 逆方向の場合
+                gsap.set(`#${id}`, { x: -slideWidth }); // 開始位置を調整
+                gsap.to(`#${id}`, {
+                    x: 0,
+                    duration: duration,
+                    ease: 'none',
+                    repeat: -1,
+                    onRepeat: function() {
+                        gsap.set(`#${id}`, { x: -slideWidth });
                     }
-                }
-            });
+                });
+            } else {
+                // 順方向の場合
+                gsap.to(`#${id}`, {
+                    x: -totalWidth,
+                    duration: duration * totalSlides,
+                    ease: 'none',
+                    repeat: -1,
+                    onRepeat: function() {
+                        gsap.set(`#${id}`, { x: 0 });
+                    }
+                });
+            }
         }
         
         // 各スライダーを初期化
-        createGsapSlider('gsap1', 3);      // 1列目（右方向、3秒/枚）
+        createGsapSlider('gsap1', 4);      // 1列目（右方向、4秒/枚）
         createGsapSlider('gsap2', 4, true); // 2列目（左方向、4秒/枚）
-        createGsapSlider('gsap3', 3.5);    // 3列目（右方向、3.5秒/枚）
+        createGsapSlider('gsap3', 4);    // 3列目（右方向、4秒/枚）
     </script>
 </body>
 </html>
