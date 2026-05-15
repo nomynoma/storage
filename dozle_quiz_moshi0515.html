@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ドズル社クイズ</title>
+<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0d1a;
+    --surface: #16162a;
+    --surface2: #1e1e38;
+    --accent: #ff6b35;
+    --accent2: #ffd166;
+    --correct: #06d6a0;
+    --wrong: #ef476f;
+    --text: #f0eeff;
+    --text-dim: #8888aa;
+    --border: #2e2e55;
+    --radius: 14px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans JP', sans-serif;
+    min-height: 100vh;
+    padding: 0 0 80px;
+  }
+
+  /* ===== HEADER ===== */
+  header {
+    background: linear-gradient(135deg, #1a0a2e 0%, #0d1f3c 100%);
+    border-bottom: 3px solid var(--accent);
+    padding: 28px 20px 20px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(255,107,53,0.18) 0%, transparent 65%);
+    pointer-events: none;
+  }
+  header h1 {
+    font-family: 'Dela Gothic One', sans-serif;
+    font-size: clamp(1.6rem, 5vw, 2.6rem);
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: 2px;
+    margin-bottom: 6px;
+  }
+  header p {
+    color: var(--text-dim);
+    font-size: 0.9rem;
+  }
+
+  /* ===== PROGRESS ===== */
+  .progress-bar-wrap {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 20px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .progress-bar-track {
+    flex: 1;
+    height: 8px;
+    background: var(--border);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 99px;
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+  .progress-label {
+    font-size: 0.82rem;
+    color: var(--text-dim);
+    white-space: nowrap;
+  }
+  .score-badge {
+    background: var(--surface2);
+    border: 1px solid var(--accent);
+    border-radius: 8px;
+    padding: 3px 10px;
+    font-size: 0.82rem;
+    color: var(--accent2);
+    white-space: nowrap;
+  }
+
+  /* ===== SECTION LABELS ===== */
+  .section-label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 28px 20px 10px;
+    max-width: 760px;
+    margin: 0 auto;
+  }
+  .section-label-text {
+    font-family: 'Dela Gothic One', sans-serif;
+    font-size: 0.95rem;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+  .section-label-line {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ===== QUIZ CARD ===== */
+  .quiz-list {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .quiz-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: border-color 0.25s;
+  }
+  .quiz-card.answered {
+    border-color: var(--surface2);
+  }
+
+  .quiz-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 18px 20px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .quiz-num {
+    font-family: 'Dela Gothic One', sans-serif;
+    font-size: 1.1rem;
+    color: var(--accent);
+    min-width: 38px;
+    line-height: 1;
+    padding-top: 2px;
+  }
+  .quiz-question {
+    font-size: 0.97rem;
+    line-height: 1.65;
+    font-weight: 700;
+  }
+  .quiz-note {
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    margin-top: 5px;
+    font-weight: 400;
+  }
+
+  /* ===== OPTIONS ===== */
+  .quiz-options {
+    padding: 14px 16px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+  }
+
+  .option-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    cursor: pointer;
+    text-align: left;
+    color: var(--text);
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    transition: background 0.15s, border-color 0.15s, transform 0.1s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .option-btn:not(.disabled):hover {
+    background: #252545;
+    border-color: var(--accent);
+    transform: translateX(2px);
+  }
+  .option-btn:not(.disabled):active {
+    transform: scale(0.98);
+  }
+  .option-label {
+    font-family: 'Dela Gothic One', sans-serif;
+    font-size: 0.88rem;
+    color: var(--accent2);
+    min-width: 22px;
+  }
+
+  /* ===== STATES ===== */
+  .option-btn.correct {
+    background: rgba(6,214,160,0.15);
+    border-color: var(--correct);
+    color: var(--correct);
+  }
+  .option-btn.correct .option-label { color: var(--correct); }
+
+  .option-btn.wrong {
+    background: rgba(239,71,111,0.13);
+    border-color: var(--wrong);
+    color: var(--wrong);
+  }
+  .option-btn.wrong .option-label { color: var(--wrong); }
+
+  .option-btn.reveal {
+    background: rgba(6,214,160,0.07);
+    border-color: rgba(6,214,160,0.35);
+    color: rgba(240,238,255,0.55);
+  }
+  .option-btn.reveal .option-label { color: rgba(6,214,160,0.45); }
+
+  .option-btn.disabled { cursor: default; }
+
+  /* ===== RESULT BADGE ===== */
+  .result-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 20px 14px 20px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    animation: fadeSlide 0.3s ease;
+  }
+  .result-badge.ok { color: var(--correct); }
+  .result-badge.ng { color: var(--wrong); }
+  .result-icon { font-size: 1.2rem; }
+
+  @keyframes fadeSlide {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ===== FINAL SCORE ===== */
+  .final-card {
+    display: none;
+    max-width: 760px;
+    margin: 30px auto 0;
+    padding: 0 16px;
+  }
+  .final-card.show { display: block; }
+  .final-inner {
+    background: linear-gradient(135deg, #1a0a2e 0%, #0d1f3c 100%);
+    border: 2px solid var(--accent);
+    border-radius: var(--radius);
+    padding: 36px 28px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .final-inner::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(255,209,102,0.12) 0%, transparent 65%);
+    pointer-events: none;
+  }
+  .final-inner h2 {
+    font-family: 'Dela Gothic One', sans-serif;
+    font-size: 2rem;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 10px;
+  }
+  .final-score-num {
+    font-family: 'Dela Gothic One', sans-serif;
+    font-size: 4.5rem;
+    color: var(--accent2);
+    line-height: 1;
+  }
+  .final-score-denom {
+    font-size: 1.5rem;
+    color: var(--text-dim);
+  }
+  .final-msg {
+    margin-top: 14px;
+    font-size: 1rem;
+    color: var(--text-dim);
+  }
+  .retry-btn {
+    margin-top: 24px;
+    display: inline-block;
+    background: linear-gradient(90deg, var(--accent), #ff9a56);
+    border: none;
+    border-radius: 10px;
+    padding: 14px 36px;
+    font-family: 'Dela Gothic One', sans-serif;
+    font-size: 1rem;
+    color: #fff;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.15s;
+    letter-spacing: 1px;
+  }
+  .retry-btn:hover { opacity: 0.88; transform: scale(1.04); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🎮 ドズル社 公式クイズ</h1>
+  <p>全30問 ― 4択から正しい答えを選んでね！</p>
+</header>
+
+<div class="progress-bar-wrap">
+  <div class="progress-bar-track"><div class="progress-bar-fill" id="progressFill"></div></div>
+  <span class="progress-label" id="progressLabel">0 / 30</span>
+  <span class="score-badge">正解 <span id="scoreCount">0</span></span>
+</div>
+
+<div id="quizContainer"></div>
+
+<div class="final-card" id="finalCard">
+  <div class="final-inner">
+    <h2>🏆 クイズ終了！</h2>
+    <div style="margin:18px 0">
+      <span class="final-score-num" id="finalScore">0</span>
+      <span class="final-score-denom"> / 30</span>
+    </div>
+    <p class="final-msg" id="finalMsg"></p>
+    <button class="retry-btn" onclick="location.reload()">もう一度挑戦する</button>
+  </div>
+</div>
+
+<script>
+const SECTIONS = [
+  { label: "第1問　ドズル社の歴史について", start: 0 },
+  { label: "第2問　ドズル社チャンネルの動画について", start: 5 },
+  { label: "第3問　ドズル社メンバー個人に関する問題", start: 16 },
+  { label: "第4問　ドズル社に関する時事問題", start: 26 },
+];
+
+const QUIZZES = [
+  // 第1問 (正解: ①①④①②)
+  {
+    q: "ドズル社チャンネルのチャンネル名の変化について、空欄に当てはまるものはどれでしょうか。\n「クラクラチャンネル」→「ドズル」→「　　　」→「ドズぼん・ザ・ゴールデン」→「ドズル社」",
+    opts: ["ドズル/Dozle","ドズルのゲーム実況","ドズぼん","ドズぼんのゲーム実況"],
+    ans: 0  // ①
+  },
+  {
+    q: "ドズル社チャンネルが登録者100万人を達成したのはいつでしょうか。",
+    opts: ["2023年1月26日","2023年2月4日","2023年2月24日","2023年3月9日"],
+    ans: 0  // ①
+  },
+  {
+    q: "2021年7月17日～18日に開催された「ドズル社ミュージアム」を構成するワールドのうち、存在しないものはどれでしょうか。",
+    opts: ["おらふくんの個展ワールド","ぼんじゅうるの卑怯道体験ワールド","おんりーの1ブロック100dayワールド","おおはらMENの日本城下町ワールド"],
+    ans: 3  // ④
+  },
+  {
+    q: "2022年9月から全12回放送された「開局！ドズル社TV」で、第1回目に放送された企画として正しいものはどれでしょうか。",
+    opts: ["ドズぼんテレビの仕事を学ぶ","ドズぼん柔道対決","ドズぼん愛知の廃ホテルでガチの恐怖体験","ドズぼん、名古屋のグルメを食べつくす！？"],
+    ans: 0  // ①
+  },
+  {
+    q: "ドズル社チャンネルの動画投稿数が1万本を達成したのはいつでしょうか。",
+    opts: ["2025年7月19日","2025年8月24日","2025年8月30日","2025年9月7日"],
+    ans: 1  // ②
+  },
+  // 第2問 (正解: ②③④④①③②①②①①②)
+  {
+    q: "「全進捗クリア装置作ってみた」で、合計何個の実績解除を目指したでしょうか。\n※2021年12月1日公開",
+    opts: ["78個","86個","97個","112個"],
+    ans: 1  // ②
+  },
+  {
+    q: "ドズル社の人気企画「大富豪おじいちゃん」で、大富豪おじいちゃんからの一番最初の依頼は何だったでしょうか。\n※2023年8月30日公開",
+    opts: ["超巨大な畑を完成させる","世界一汚いビーチを綺麗にする","池の水を全部抜く","マグマの海をすべて抜く"],
+    ans: 2  // ③
+  },
+  {
+    q: "「【ドズル社】勇気100パーセント【歌ってみた】」の最後のサビのシーン、メンバー全員でご飯を食べているシーンで食べているものはどれでしょうか。\n※2024年6月9日公開",
+    opts: ["お弁当","寿司","鍋","焼肉"],
+    ans: 3  // ④
+  },
+  {
+    q: "「〇〇したら逮捕される世界でサバイバル」のオープニングで、ぼんじゅうるとおらふくんはすでに逮捕されていました。2人は何の罪で逮捕されていたでしょうか。\n※2022年11月15日公開",
+    opts: ["不法投棄","草刈り取りすぎ罪","お花かわいそう罪","サボリ罪"],
+    ans: 3  // ④
+  },
+  {
+    q: "「ドズル社スクランブル！2024.10.19」の「ゆめかわ★エンドラ討伐」未公開シーンで、「〇〇で売ってたらゆめかわだ」の〇〇に当てはまる場所は次のうちどれでしょうか。",
+    opts: ["原宿","渋谷","新宿","東京"],
+    ans: 0  // ①
+  },
+  {
+    q: "「【マイクラ】なんでもあり！ガチかくれんぼ！」の初回で、おらふくんが見つかるまでにかかった時間はどれでしょうか。\n※2024年7月4日公開",
+    opts: ["6秒","7秒","8秒","9秒"],
+    ans: 2  // ③
+  },
+  {
+    q: "「動物になった仲間を連れてエンドラ討伐！」で、おんりーは何の動物になっていたでしょうか。\n※2025年7月13日公開",
+    opts: ["ナマケモノ","ゾウ","ライオン","ペンギン"],
+    ans: 1  // ②
+  },
+  {
+    q: "「クセが強い『キャラ』でエンドラ討伐」で、進化したぼんじゅうるが「焼きいも」に代わって配り始めたものは次のうちどれでしょうか。\n※2025年3月26日公開",
+    opts: ["チョコソース焼きいも","バター焼きいも","生クリーム焼きいも","カスタードクリーム焼きいも"],
+    ans: 0  // ①
+  },
+  {
+    q: "「今年最強の福男は誰だ！福男レース2025」にて、2025年の福男になったのは誰でしょうか。\n※2025年1月2日公開",
+    opts: ["ぼんじゅうる","おんりー","おらふくん","おおはらMEN"],
+    ans: 1  // ②
+  },
+  {
+    q: "「自転車でこいだ電気だけでエンドラ討伐」で、ゲーム難易度を変更しました。変更後の難易度は次のうちどれでしょうか。\n※2025年8月10日配信",
+    opts: ["イージー","ノーマル","ハード","ハードコア"],
+    ans: 0  // ①
+  },
+  {
+    q: "ドズル社テーマソング「グッジョイ！」歌ってみた動画PVの2番で、おおはらMENの後ろにあった記念看板に描かれている数字は何でしょうか。\n※2025年6月15日公開",
+    opts: ["500000","300000","600000","400000"],
+    ans: 0  // ①
+  },
+  {
+    q: "「エンドラ討伐リレー」で、2026年4月現在、成功時に一度もエンドラにとどめを刺したことがないのは誰でしょうか。",
+    opts: ["ドズル","ぼんじゅうる","おらふくん","ネコおじ"],
+    ans: 1  // ②
+  },
+  // 第3問 (正解: ④②③③③④③④②①)
+  {
+    q: "ドズルの誕生日はいつでしょうか。",
+    opts: ["5月22日","7月28日","9月9日","11月21日"],
+    ans: 3  // ④
+  },
+  {
+    q: "2024年12月2日から開催された「VCR GTA3」にて、ドズルが着信ボイスとして収録した音声として正しいものはどれでしょうか。",
+    opts: ["そろそろするか・・・","マッスルだぞ","イーッヒヒヒヒ！","押忍！"],
+    ans: 1  // ②
+  },
+  {
+    q: "ぼんじゅうるチャンネル30万人記念企画「遊園地全てキレイにするまで終われません！」で、次のうち誤っているスキンはどれでしょうか。\n※2025年7月31日配信",
+    opts: ["酔いどれ知らず風スキン","マリーザ風スキン","リンダ リンダ風スキン","1万円おじさんスキン"],
+    ans: 2  // ③
+  },
+  {
+    q: "2024年1月8日にぼんじゅうる初の単独オフラインイベント「ぼんさんぽ in 有楽町」が行われた場所として、正しいものはどれでしょうか。",
+    opts: ["東京国際フォーラム","東京交通会館","ヒューリックホール東京","有楽町よみうりホール"],
+    ans: 2  // ③
+  },
+  {
+    q: "ドズル社公式サイトに書かれている、おんりーが好きな食べ物は何でしょうか。",
+    opts: ["バナナ","ヨーグルト","ラーメン","冷やし中華"],
+    ans: 2  // ③
+  },
+  {
+    q: "おんりーチャンネルで投稿された歌ってみた動画で、2番目に投稿されたものは何でしょうか。\n※2022年12月23日",
+    opts: ["ケセラセラ","ミックスナッツ","インフェルノ","ダンスホール"],
+    ans: 3  // ④
+  },
+  {
+    q: "おらふくんが飼っている猫の名前として、正しい組み合わせを選んでください。",
+    opts: ["らい・ふう","らい・むぎ","むぎ・そら","ぽこ太朗・うま次郎・しろがね丸"],
+    ans: 2  // ③
+  },
+  {
+    q: "「〇〇したら全ロスする世界でサバイバル！」の動画内で、日本語禁止の時間帯でドズルに「Mr.Oraf, Where？」と尋ねられたおらふくんは何と答えたでしょうか。\n※2022年7月30日公開",
+    opts: ["ネザーゴー","オーマイガー","オーケーオーケー","マイゴー"],
+    ans: 3  // ④
+  },
+  {
+    q: "おおはらMENが小学校からの幼馴染である2人と組んでいるユニット名で正しいものは次のうちどれでしょうか。",
+    opts: ["暴れ部トリオ","帰宅部トリオ","ゲーム部トリオ","ギャンブル部トリオ"],
+    ans: 1  // ②
+  },
+  {
+    q: "2024年6月に沖縄旅行に行ったドズル社メンバーですが、寝ていたおおはらMENが突如起き上がり、おらふくんに向かって発した寝言は何でしょうか。",
+    opts: ["ハムスターがいた","誰でもできますねぇ","これがお前のやり方か！","無敵のぼんじゅうる"],
+    ans: 0  // ①
+  },
+  // 第4問 (正解: ④①③)
+  {
+    q: "ドズル社が1年以上の歳月をかけて作り上げた完全オリジナルのMMORPG『DoZ』の正式名称は何でしょうか。",
+    opts: ["Dozle or Zenith（ドズル オア ゼニス）","Dome or Zenith（ドーム オア ゼニス）","Doom of Zenith（ドゥーム オブ ゼニス）","Doom or Zenith（ドゥーム オア ゼニス）"],
+    ans: 3  // ④
+  },
+  {
+    q: "2026年5月6日に開催された『マイクラバーサス 〜 ハント・アンド・ラン 〜 赤ちゃんモブを見つけよう！』でMVPハンターとして表彰されたおんりーが獲得したポイントとして正しいものはどれでしょうか。",
+    opts: ["603","633","649","650"],
+    ans: 0  // ①
+  },
+  {
+    q: "2026年2月に受注販売された、ドズル社メンバーをイメージした初のオリジナルフレグランスのキャッチコピーとして正しいものはどれでしょうか。",
+    opts: ["香ればそっと 世界は、きらめく","ふれればきっと 毎日は、はなやぐ","まとえばきっと 世界は、はなやぐ","香りがそっと あなたの物語を彩る"],
+    ans: 2  // ③
+  },
+];
+
+const LABELS = ["①","②","③","④"];
+const MSGS = [
+  { min:0,  max:9,  msg:"もう少し勉強が必要かも？また挑戦してね！" },
+  { min:10, max:19, msg:"なかなかいい感じ！ドズル社をもっと深掘りしよう！" },
+  { min:20, max:25, msg:"すごい！ドズル社のことよく知ってるね！" },
+  { min:26, max:29, msg:"ほぼ満点！上級ドズル社ファンだ！" },
+  { min:30, max:30, msg:"🎉 完璧！最強のドズル社マスター！！" },
+];
+
+let answered = 0;
+let score = 0;
+
+function getMsg(s) {
+  return MSGS.find(m => s >= m.min && s <= m.max)?.msg || "";
+}
+
+function updateProgress() {
+  const pct = (answered / QUIZZES.length) * 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = answered + ' / ' + QUIZZES.length;
+  document.getElementById('scoreCount').textContent = score;
+}
+
+function buildQuiz() {
+  const container = document.getElementById('quizContainer');
+  let sectionIdx = 0;
+
+  QUIZZES.forEach((q, i) => {
+    // セクションラベル
+    if (sectionIdx < SECTIONS.length && SECTIONS[sectionIdx].start === i) {
+      const sl = document.createElement('div');
+      sl.className = 'section-label';
+      sl.innerHTML = `<span class="section-label-text">${SECTIONS[sectionIdx].label}</span><div class="section-label-line"></div>`;
+      container.appendChild(sl);
+      sectionIdx++;
+    }
+
+    const ql = document.createElement('div');
+    ql.className = 'quiz-list';
+    container.appendChild(ql);
+
+    const card = document.createElement('div');
+    card.className = 'quiz-card';
+    card.id = 'card' + i;
+
+    // Header
+    const questionLines = q.q.split('\n');
+    const noteHtml = questionLines.length > 1
+      ? `<div class="quiz-note">${questionLines.slice(1).join('<br>')}</div>` : '';
+    card.innerHTML = `
+      <div class="quiz-header">
+        <div class="quiz-num">Q${i+1}</div>
+        <div>
+          <div class="quiz-question">${questionLines[0]}</div>
+          ${noteHtml}
+        </div>
+      </div>
+      <div class="quiz-options" id="opts${i}"></div>
+      <div id="result${i}" style="display:none"></div>
+    `;
+    ql.appendChild(card);
+
+    // Options
+    const optsDiv = card.querySelector('#opts' + i);
+    q.opts.forEach((opt, j) => {
+      const btn = document.createElement('button');
+      btn.className = 'option-btn';
+      btn.innerHTML = `<span class="option-label">${LABELS[j]}</span><span>${opt}</span>`;
+      btn.addEventListener('click', () => handleAnswer(i, j, btn, optsDiv, card));
+      optsDiv.appendChild(btn);
+    });
+  });
+}
+
+function handleAnswer(qIdx, chosen, btn, optsDiv, card) {
+  if (card.classList.contains('answered')) return;
+  card.classList.add('answered');
+  answered++;
+
+  const isCorrect = chosen === QUIZZES[qIdx].ans;
+  if (isCorrect) score++;
+
+  // Style buttons
+  const btns = optsDiv.querySelectorAll('.option-btn');
+  btns.forEach((b, j) => {
+    b.classList.add('disabled');
+    if (j === QUIZZES[qIdx].ans) {
+      b.classList.add(j === chosen ? 'correct' : 'reveal');
+    } else if (j === chosen) {
+      b.classList.add('wrong');
+    }
+  });
+
+  // Result badge
+  const resultDiv = card.querySelector('#result' + qIdx);
+  resultDiv.style.display = 'flex';
+  resultDiv.className = 'result-badge ' + (isCorrect ? 'ok' : 'ng');
+  if (isCorrect) {
+    resultDiv.innerHTML = `<span class="result-icon">⭕</span>正解！`;
+  } else {
+    resultDiv.innerHTML = `<span class="result-icon">❌</span>不正解… 正解は「${LABELS[QUIZZES[qIdx].ans]} ${QUIZZES[qIdx].opts[QUIZZES[qIdx].ans]}」でした`;
+  }
+
+  updateProgress();
+
+  if (answered === QUIZZES.length) {
+    setTimeout(showFinal, 500);
+  }
+}
+
+function showFinal() {
+  const fc = document.getElementById('finalCard');
+  fc.classList.add('show');
+  document.getElementById('finalScore').textContent = score;
+  document.getElementById('finalMsg').textContent = getMsg(score);
+  fc.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+buildQuiz();
+updateProgress();
+</script>
+</body>
+</html>
